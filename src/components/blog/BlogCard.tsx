@@ -18,7 +18,7 @@ export function BlogCard({ post, featured = false }: {post: BlogPost;featured?: 
           src={post.image}
           alt={post.title}
           loading="lazy"
-          className="h-full w-full rounded-xl object-contain transition-opacity duration-[600ms] ease-smooth group-hover:opacity-90" />
+          className="h-full w-full rounded-2xl object-contain transition-opacity duration-[600ms] ease-smooth group-hover:opacity-90" />
         
       </Link>
       <div className="flex flex-1 flex-col p-5">
