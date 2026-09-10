@@ -2,42 +2,37 @@ import { IMG } from './images';
 import type { Category } from '../types';
 
 export const categories: Category[] = [
-{
-  slug: 'fashion',
-  name: 'Men Big Size Fashion',
-  image: IMG.fashion,
-  blurb: 'Oversized essentials, big size fits and layering pieces built to last.'
-},
-{
-  slug: 'electronics',
-  name: 'Men Jeans pants',
-  image: IMG.mensJeans,
-  blurb: 'Relaxed denim fits for everyday wear.'
-},
-{
-  slug: 'beauty',
-  name: 'Men Cotton t-shirts',
-  image: IMG.heroFloating.first.topLeft,
-  blurb: 'Comfortable cotton essentials for everyday style.'
-},
-{
-  slug: 'fitness',
-  name: 'Men & Boys Shoes',
-  image: IMG.mensShoes,
-  blurb: 'Everyday sneakers, boots and trainers for men and boys.'
-},
-{
-  slug: 'home-decor',
-  name: 'Men Caps',
-  image: IMG.mensCaps,
-  blurb: 'Classic caps to finish your everyday look.'
-},
-{
-  slug: 'accessories',
-  name: 'Men Hoodies & Vests',
-  image: IMG.mensHoodies,
-  blurb: 'Layering essentials for relaxed, comfortable outfits.'
-}];
+  {
+    slug: 'pants',
+    name: 'Men pants',
+    image: IMG.mensJeans,
+    blurb: 'Jeans, relaxed fits, and big size pants tailored for men and boys.'
+  },
+  {
+    slug: 't-shirts',
+    name: 'Men Cotton t-shirts',
+    image: IMG.heroFloating.first.topLeft,
+    blurb: 'Pure soft cotton tees, oversized fits, and everyday essentials.'
+  },
+  {
+    slug: 'shoes',
+    name: 'Men shoes',
+    image: IMG.mensShoes,
+    blurb: 'Sneakers, high-tops, boots, and athletic footwear built for style.'
+  },
+  {
+    slug: 'caps',
+    name: 'Men caps',
+    image: IMG.mensCaps,
+    blurb: 'Signature caps, beanies, and headwear to complete your fit.'
+  },
+  {
+    slug: 'hoodies-vests',
+    name: 'Men Hoodies and Vest',
+    image: IMG.mensHoodies,
+    blurb: 'Warm hoodies, sleeveless vests, and heavyweight outerwear.'
+  }
+];
 
 
 export const brands: string[] = ['Nova', 'Nike', 'Apple', 'Sony', 'Samsung', 'Aura', 'Lumen'];

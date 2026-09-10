@@ -12,6 +12,15 @@ import fashionImage from './o.jpg';
 import capsImage from './banie.jpg';
 import hoodiesImage from './ct.jpg';
 import airMax270Image from './cl.jpg';
+import cl1Image from './cl1.jpg';
+import cl2Image from './cl2.jpg';
+import cl3Image from './cl3.jpg';
+import cl4Image from './cl4.jpg';
+import t1Image from './t1.jpg';
+import t2Image from './t2.jpg';
+import t3Image from './t3.jpg';
+import t4Image from './t4.png';
+import t5Image from './t5.jpg';
 
 const publicImage = (fileName: string) => `/${fileName}`;
 
@@ -48,6 +57,8 @@ export const IMG = {
   mensShoes: secondFloatingBottomLeftImage,
   mensCaps: capsImage,
   mensHoodies: hoodiesImage,
+  clients: [cl1Image, cl2Image, cl3Image, cl4Image],
+  testimonials: [t1Image, t2Image, t3Image, t4Image, t5Image],
   blogTech: publicImage('c83bdc22-51bf-45cc-b816-77537e616edc.jpg'),
   blogFashion: publicImage('0c830b8b-8ec3-4a49-9911-b18bef76f3d8.jpg'),
   promoFitness: publicImage('b5df3af9-1371-4353-828d-4d1ad3462b59.jpg'),
@@ -55,9 +66,9 @@ export const IMG = {
   bag: publicImage('917c738d-f791-4fcb-94ee-ba02efeb9b2c.jpg'),
   tshirt: publicImage('df4e4cbd-af35-4de6-b503-e4a9fe5d0fac.jpg'),
   pants: publicImage('0eb2783b-0b7a-4a0e-b29e-a3e46912f4e1.jpg'),
-  avatar1: publicImage('f09d3c53-c103-4b46-9e0a-75e3464de6e6.jpg'),
-  avatar2: publicImage('87ca1f55-1236-4d64-8789-50a2370ac830.jpg'),
-  avatar3: publicImage('38ebe589-ea68-48ae-bf5a-09c16bdf36f4.jpg'),
-  avatar4: publicImage('15a82519-a2d2-48b3-8a56-c0caff0b9890.jpg'),
-  avatar5: publicImage('7e846520-7014-4441-aee5-8872e45e99d0.jpg')
+  avatar1: t1Image,
+  avatar2: t2Image,
+  avatar3: t3Image,
+  avatar4: t4Image,
+  avatar5: t5Image
 };

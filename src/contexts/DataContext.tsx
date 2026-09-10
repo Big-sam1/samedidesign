@@ -165,11 +165,77 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Realtime Broadcast Channel to sync between admin and customer devices in real-time
+  useEffect(() => {
+    const syncChannel = supabase.channel('samedidesign-live-updates', {
+      config: { broadcast: { self: false } }
+    });
+
+    syncChannel
+      .on('broadcast', { event: 'products_sync' }, (payload) => {
+        if (payload.payload && Array.isArray(payload.payload.products)) {
+          setProducts(payload.payload.products);
+          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(payload.payload.products));
+        }
+      })
+      .on('broadcast', { event: 'blog_sync' }, (payload) => {
+        if (payload.payload && Array.isArray(payload.payload.blogPosts)) {
+          setBlogPosts(payload.payload.blogPosts);
+          localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(payload.payload.blogPosts));
+        }
+      })
+      .on('broadcast', { event: 'content_sync' }, (payload) => {
+        if (payload.payload && payload.payload.siteContent) {
+          setSiteContent((prev) => ({ ...prev, ...payload.payload.siteContent }));
+          localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(payload.payload.siteContent));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      void supabase.removeChannel(syncChannel);
+    };
+  }, []);
+
+  const broadcastProducts = (next: Product[]) => {
+    try {
+      const ch = supabase.channel('samedidesign-live-updates');
+      ch.send({
+        type: 'broadcast',
+        event: 'products_sync',
+        payload: { products: next }
+      }).catch(() => {});
+    } catch {}
+  };
+
+  const broadcastBlog = (next: BlogPost[]) => {
+    try {
+      const ch = supabase.channel('samedidesign-live-updates');
+      ch.send({
+        type: 'broadcast',
+        event: 'blog_sync',
+        payload: { blogPosts: next }
+      }).catch(() => {});
+    } catch {}
+  };
+
+  const broadcastContent = (next: SiteContent) => {
+    try {
+      const ch = supabase.channel('samedidesign-live-updates');
+      ch.send({
+        type: 'broadcast',
+        event: 'content_sync',
+        payload: { siteContent: next }
+      }).catch(() => {});
+    } catch {}
+  };
+
   const updateProduct = useCallback(async (updated: Product): Promise<boolean> => {
     try {
       setProducts((prev) => {
         const next = prev.map((p) => (p.id === updated.id ? updated : p));
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
+        broadcastProducts(next);
         return next;
       });
       supabase.from('products').upsert(updated).catch(() => {});
@@ -184,6 +250,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setProducts((prev) => {
         const next = [product, ...prev];
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
+        broadcastProducts(next);
         return next;
       });
       supabase.from('products').insert(product).catch(() => {});
@@ -198,6 +265,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setProducts((prev) => {
         const next = prev.filter((p) => p.id !== id);
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
+        broadcastProducts(next);
         return next;
       });
       supabase.from('products').delete().eq('id', id).catch(() => {});
@@ -212,6 +280,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setBlogPosts((prev) => {
         const next = prev.map((b) => (b.slug === updated.slug ? updated : b));
         localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
+        broadcastBlog(next);
         return next;
       });
       supabase.from('blog_posts').upsert(updated).catch(() => {});
@@ -226,6 +295,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setBlogPosts((prev) => {
         const next = [post, ...prev];
         localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
+        broadcastBlog(next);
         return next;
       });
       supabase.from('blog_posts').insert(post).catch(() => {});
@@ -240,6 +310,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setBlogPosts((prev) => {
         const next = prev.filter((b) => b.slug !== slug);
         localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
+        broadcastBlog(next);
         return next;
       });
       supabase.from('blog_posts').delete().eq('slug', slug).catch(() => {});
@@ -254,6 +325,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setSiteContent((prev) => {
         const next = { ...prev, ...content };
         localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(next));
+        broadcastContent(next);
         return next;
       });
       supabase.from('site_content').upsert(content).catch(() => {});

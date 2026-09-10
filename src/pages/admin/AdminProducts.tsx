@@ -24,9 +24,14 @@ export function AdminProducts() {
   const [isCreating, setIsCreating] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [page, setPage] = useState(1);
-  const pageSize = 5;
-
-  const categories = ['all', 'fashion', 'shoes', 'accessories', 'electronics', 'lifestyle'];
+  const categories = [
+    { value: 'all', label: 'All Categories' },
+    { value: 'pants', label: 'Men pants' },
+    { value: 't-shirts', label: 'Men Cotton t-shirts' },
+    { value: 'shoes', label: 'Men shoes' },
+    { value: 'caps', label: 'Men caps' },
+    { value: 'hoodies-vests', label: 'Men Hoodies and Vest' }
+  ];
 
   const filtered = products.filter((p) => {
     const matchesSearch =
@@ -74,7 +79,7 @@ export function AdminProducts() {
       id: newId,
       name: '',
       brand: 'Samedi',
-      category: 'fashion',
+      category: 'pants',
       price: 49.99,
       rating: 5.0,
       reviews: 1,
@@ -168,8 +173,8 @@ export function AdminProducts() {
             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           >
             {categories.map((c) => (
-              <option key={c} value={c}>
-                {c.toUpperCase()}
+              <option key={c.value} value={c.value}>
+                {c.label}
               </option>
             ))}
           </select>
@@ -399,10 +404,11 @@ export function AdminProducts() {
                     onChange={(e) => setEditing({ ...editing, category: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800"
                   >
-                    <option value="fashion">Fashion</option>
-                    <option value="shoes">Shoes</option>
-                    <option value="accessories">Accessories</option>
-                    <option value="lifestyle">Lifestyle</option>
+                    <option value="pants">Men pants</option>
+                    <option value="t-shirts">Men Cotton t-shirts</option>
+                    <option value="shoes">Men shoes</option>
+                    <option value="caps">Men caps</option>
+                    <option value="hoodies-vests">Men Hoodies and Vest</option>
                   </select>
                 </div>
 

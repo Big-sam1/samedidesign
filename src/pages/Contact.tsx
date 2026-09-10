@@ -21,26 +21,60 @@ interface Fields {
   message: string;
 }
 
+const WEB3FORMS_KEY = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '79f796a9-2033-42f1-8bc5-5a17fedb219c';
+
 export function Contact() {
   const [fields, setFields] = useState<Fields>({ name: '', email: '', phone: '', message: '' });
   const [errors, setErrors] = useState<Partial<Fields>>({});
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const setField = (key: keyof Fields) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFields((prev) => ({ ...prev, [key]: event.target.value }));
     setErrors((prev) => ({ ...prev, [key]: undefined }));
+    setSubmitError(null);
   };
 
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const next: Partial<Fields> = {};
     if (fields.name.trim().length < 2) next.name = 'Enter your name';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) next.email = 'Enter a valid email address';
-    if (fields.message.trim().length < 10) next.message = 'Tell us a little more (10+ characters)';
+    if (fields.message.trim().length < 5) next.message = 'Tell us a little more (5+ characters)';
     setErrors(next);
     if (Object.keys(next).length > 0) return;
-    setSent(true);
-    setFields({ name: '', email: '', phone: '', message: '' });
+
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('access_key', WEB3FORMS_KEY);
+      formData.append('name', fields.name.trim());
+      formData.append('email', fields.email.trim());
+      if (fields.phone.trim()) formData.append('phone', fields.phone.trim());
+      formData.append('message', fields.message.trim());
+      formData.append('from_name', 'Samedi design Customer Inquiry');
+      formData.append('subject', `New Message from ${fields.name.trim()} - Samedi design`);
+
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setSent(true);
+        setFields({ name: '', email: '', phone: '', message: '' });
+      } else {
+        setSubmitError(data.message || 'Failed to send message. Please try again.');
+      }
+    } catch {
+      setSubmitError('Failed to connect to form service. Please call or WhatsApp us on 0784264931.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -109,10 +143,14 @@ export function Contact() {
                     <Input label="Name" name="name" value={fields.name} onChange={setField('name')} error={errors.name} placeholder="Samuel Mugisha" />
                     <Input label="Email" name="email" type="email" value={fields.email} onChange={setField('email')} error={errors.email} placeholder="you@email.com" />
                   </div>
-                  <Input label="Phone (optional)" name="phone" type="tel" value={fields.phone} onChange={setField('phone')} placeholder="+256 700 123 456" />
                   <Textarea label="Message" name="message" value={fields.message} onChange={setField('message')} error={errors.message} placeholder="How can we help?" />
-                  <Button type="submit" size="lg">
-                    Send Message
+                  {submitError && (
+                    <div className="rounded-xl bg-red-50 p-3.5 text-[13px] font-medium text-red-600 border border-red-200">
+                      {submitError}
+                    </div>
+                  )}
+                  <Button type="submit" size="lg" disabled={submitting}>
+                    {submitting ? 'Sending....' : 'Submit Form'}
                   </Button>
                 </motion.form>
               }

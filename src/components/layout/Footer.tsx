@@ -1,14 +1,19 @@
 import { Link } from 'react-router-dom';
-import { FacebookIcon, InstagramIcon, LinkedinIcon, TwitterIcon, YoutubeIcon, PhoneIcon, MapPinIcon } from 'lucide-react';
+import { InstagramIcon, PhoneIcon, MapPinIcon, MessageCircleIcon } from 'lucide-react';
 import { footerColumns } from '../../data/site';
 import { Logo } from '../ui/Logo';
 
 const socials = [
-  { label: 'Instagram', Icon: InstagramIcon },
-  { label: 'Twitter', Icon: TwitterIcon },
-  { label: 'Facebook', Icon: FacebookIcon },
-  { label: 'YouTube', Icon: YoutubeIcon },
-  { label: 'LinkedIn', Icon: LinkedinIcon }
+  {
+    label: 'WhatsApp',
+    Icon: MessageCircleIcon,
+    href: 'https://wa.me/250784264931'
+  },
+  {
+    label: 'Instagram',
+    Icon: InstagramIcon,
+    href: 'https://www.instagram.com/samedidesign?utm_source=ig_web_button_share_sheet&stkn=ZDNlZDc0MzIxNw=='
+  }
 ];
 
 export function Footer() {
@@ -69,17 +74,18 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col gap-5 border-t border-line pt-7 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
-            {socials.map(({ label, Icon }) =>
-            <a
-              key={label}
-              href="#"
-              aria-label={label}
-              onClick={(event) => event.preventDefault()}
-              className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-charcoal transition-colors duration-200 hover:border-accent/40 hover:text-accent">
-              
+            {socials.map(({ label, Icon, href }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-charcoal transition-colors duration-200 hover:border-accent/40 hover:text-accent"
+              >
                 <Icon className="h-4 w-4" aria-hidden="true" />
               </a>
-            )}
+            ))}
           </div>
           <p className="text-[12.5px] text-muted">We sell clothes · Bigsize store Shopping · Fast Delivery across Kigali &amp; Rwanda</p>
         </div>

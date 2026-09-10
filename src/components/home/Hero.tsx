@@ -53,7 +53,7 @@ const floatPositions = [
 { className: 'right-[7%] bottom-[8%]', from: { x: 44, y: 30 }, depth: 20, duration: 6.6 }];
 
 
-const avatars = [IMG.avatar1, IMG.avatar2, IMG.avatar3, IMG.avatar4];
+const avatars = IMG.clients;
 
 export function Hero() {
   const { products, siteContent } = useData();
