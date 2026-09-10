@@ -88,10 +88,10 @@ export function Footer() {
           <p>© 2026 Samedi design. All rights reserved. Nyamirambo Biryogo · Tel &amp; WhatsApp: 0784264931</p>
           <div className="flex gap-5">
             <Link to="/shop" className="transition-colors hover:text-ink">
-              Shop Men &amp; Boys
+              Built by DMD
             </Link>
             <Link to="/contact" className="transition-colors hover:text-ink">
-              Contact &amp; Store Location
+              Dream Maker Developers
             </Link>
           </div>
         </div>
