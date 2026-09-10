@@ -1,0 +1,134 @@
+/* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* CRITICAL: THE FOLLOWING TAILWIND IMPORTS MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
+
+:root {
+  --page: 255 255 255;
+  --surface: 255 255 255;
+  --canvas: 247 247 248;
+  --ink: 20 22 26;
+  --charcoal: 43 47 54;
+  --muted: 107 114 128;
+  --line: 232 232 234;
+  --accent: 244 85 29;
+  --accent-hover: 220 70 17;
+  --accent-soft: 255 242 237;
+  --skeleton-a: 239 239 241;
+  --skeleton-b: 247 247 248;
+}
+.dark {
+  --page: 17 18 21;
+  --surface: 27 29 34;
+  --canvas: 22 24 28;
+  --ink: 245 246 247;
+  --charcoal: 213 216 221;
+  --muted: 148 154 163;
+  --line: 52 56 63;
+  --accent: 255 106 51;
+  --accent-hover: 255 132 84;
+  --accent-soft: 58 33 22;
+  --skeleton-a: 40 43 49;
+  --skeleton-b: 50 54 61;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+body {
+  background-color: rgb(var(--page));
+  color: rgb(var(--ink));
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background-color 300ms cubic-bezier(0.23, 1, 0.32, 1), color 300ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.02em;
+}
+*:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+/* Hide scrollbars on horizontal carousels while keeping them scrollable */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--skeleton-a)) 25%,
+    rgb(var(--skeleton-b)) 37%,
+    rgb(var(--skeleton-a)) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .skeleton {
+    animation: none;
+  }
+}
+
+/* Admin workspace palette: warm dark chocolate replaces the storefront blues. */
+.admin-portal .bg-blue-600,
+.admin-portal .bg-blue-500,
+.admin-portal .bg-indigo-500,
+.admin-portal .bg-indigo-600,
+.admin-portal .bg-\[\#0B57D0\],
+.admin-portal .bg-\[\#1565C0\],
+.admin-portal .bg-\[\#0D47A1\] {
+  background-color: #3b2418 !important;
+}
+.admin-portal .bg-gradient-to-r {
+  background-image: linear-gradient(to right, #3b2418, #5a3826, #2a1810) !important;
+}
+.admin-portal .text-blue-600,
+.admin-portal .text-indigo-600,
+.admin-portal .text-blue-700,
+.admin-portal .text-indigo-700 {
+  color: #6b422d !important;
+}
+.admin-portal .text-blue-100,
+.admin-portal .text-blue-200,
+.admin-portal .text-blue-300 {
+  color: #ead8ca !important;
+}
+.admin-portal .bg-blue-50,
+.admin-portal .bg-indigo-50,
+.admin-portal .bg-blue-100 {
+  background-color: #f1e3d9 !important;
+}
+.admin-portal .border-blue-200,
+.admin-portal .border-blue-300,
+.admin-portal .border-indigo-400 {
+  border-color: #b58b70 !important;
+}
+.admin-portal .hover\:bg-blue-700:hover,
+.admin-portal .hover\:bg-blue-100:hover,
+.admin-portal .hover\:bg-indigo-700:hover {
+  background-color: #2a1810 !important;
+}
