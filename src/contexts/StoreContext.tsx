@@ -149,6 +149,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }
 
         setUser(baseUser);
+      } else {
+        // A persisted local profile is not an authenticated session.
+        setUser(null);
       }
     });
     return () => unsubscribe();
@@ -292,55 +295,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     [pushToast, setWishlist]
   );
 
-  // Real Firebase Email/Password Sign-in with local fallback for admin convenience
+  // Email/password sign-in is allowed only for accounts already created in Firebase.
   const login = useCallback(
-    async (email: string, password?: string, name?: string): Promise<boolean> => {
+    async (email: string, password?: string): Promise<boolean> => {
+      if (!password) {
+        pushToast('Enter your password to sign in', 'error');
+        return false;
+      }
+
       try {
-        if (password) {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const fbUser = userCredential.user;
-          setUser({
-            name: fbUser.displayName || name || email.split('@')[0],
-            email: fbUser.email || email,
-            phone: '0784264931',
-            city: 'Kigali',
-            country: 'Rwanda'
-          });
-          pushToast('Signed in to Samedi design');
-          return true;
-        } else {
-          setUser({ name: name ?? email.split('@')[0], email, phone: '0784264931', city: 'Kigali', country: 'Rwanda' });
-          pushToast('Signed in to Samedi design');
-          return true;
-        }
-      } catch (err: any) {
-        if (password && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential')) {
-          try {
-            const userCred = await createUserWithEmailAndPassword(auth, email, password);
-            if (name) {
-              await updateProfile(userCred.user, { displayName: name });
-            }
-            setUser({
-              name: name || email.split('@')[0],
-              email: userCred.user.email || email,
-              phone: '0784264931',
-              city: 'Kigali',
-              country: 'Rwanda'
-            });
-            pushToast('Account created and signed in');
-            return true;
-          } catch (createErr: any) {
-            setUser({ name: name ?? email.split('@')[0], email, phone: '0784264931', city: 'Kigali', country: 'Rwanda' });
-            pushToast('Signed in');
-            return true;
-          }
-        }
-        setUser({ name: name ?? email.split('@')[0], email, phone: '0784264931', city: 'Kigali', country: 'Rwanda' });
+        await signInWithEmailAndPassword(auth, email, password);
         pushToast('Signed in to Samedi design');
         return true;
+      } catch {
+        pushToast('Unable to sign in. Check your email and password, or create an account.', 'error');
+        return false;
       }
     },
-    [pushToast, setUser]
+    [pushToast]
   );
 
   // Firebase Google Sign In
@@ -358,11 +330,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
       pushToast('Signed in with Google');
       return true;
-    } catch (err: any) {
-      console.warn('Google sign in error:', err);
-      setUser({ name: 'Samuel Mugisha', email: 'samuel@samedidesign.com', phone: '0784264931', city: 'Kigali', country: 'Rwanda' });
-      pushToast('Signed in to Samedi design');
-      return true;
+    } catch {
+      pushToast('Google sign-in was not completed. Please try again.', 'error');
+      return false;
     }
   }, [pushToast, setUser]);
 
@@ -381,10 +351,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         });
         pushToast('Account created successfully');
         return true;
-      } catch (err: any) {
-        setUser({ name, email, phone: phone || '0784264931', city: 'Kigali', country: 'Rwanda' });
-        pushToast('Account created');
-        return true;
+      } catch {
+        pushToast('Unable to create your account. Please try again.', 'error');
+        return false;
       }
     },
     [pushToast, setUser]
