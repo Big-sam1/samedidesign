@@ -13,12 +13,12 @@ export function BlogCard({ post, featured = false }: {post: BlogPost;featured?: 
       transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-white transition-shadow duration-300 ease-smooth hover:shadow-lift">
       
-      <Link to={`/blog/${post.slug}`} className="flex aspect-[16/9] items-center justify-center overflow-hidden bg-canvas p-2">
+      <Link to={`/blog/${post.slug}`} className="flex aspect-[16/9] items-center justify-center overflow-hidden bg-canvas p-0">
         <img
           src={post.image}
           alt={post.title}
           loading="lazy"
-          className="h-full w-full rounded-2xl object-contain transition-opacity duration-[600ms] ease-smooth group-hover:opacity-90" />
+          className="h-full w-full rounded-[1rem] object-cover transition-opacity duration-[600ms] ease-smooth group-hover:opacity-90" />
         
       </Link>
       <div className="flex flex-1 flex-col p-5">

@@ -243,8 +243,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastProducts(next);
         return next;
       });
-      supabase.from('products').upsert(updated).catch(() => {});
-      return true;
+      const { error } = await supabase.from('products').upsert(updated);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -258,8 +258,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastProducts(next);
         return next;
       });
-      supabase.from('products').insert(product).catch(() => {});
-      return true;
+      const { error } = await supabase.from('products').insert(product);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -273,8 +273,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastProducts(next);
         return next;
       });
-      supabase.from('products').delete().eq('id', id).catch(() => {});
-      return true;
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -288,8 +288,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastBlog(next);
         return next;
       });
-      supabase.from('blog_posts').upsert(updated).catch(() => {});
-      return true;
+      const { error } = await supabase.from('blog_posts').upsert(updated);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -303,8 +303,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastBlog(next);
         return next;
       });
-      supabase.from('blog_posts').insert(post).catch(() => {});
-      return true;
+      const { error } = await supabase.from('blog_posts').insert(post);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -318,8 +318,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastBlog(next);
         return next;
       });
-      supabase.from('blog_posts').delete().eq('slug', slug).catch(() => {});
-      return true;
+      const { error } = await supabase.from('blog_posts').delete().eq('slug', slug);
+      if (error) throw error;
     } catch {
       return false;
     }
@@ -333,8 +333,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         broadcastContent(next);
         return next;
       });
-      supabase.from('site_content').upsert(content).catch(() => {});
-      return true;
+      const { error } = await supabase.from('site_content').upsert({ id: 'site', ...content });
+      if (error) throw error;
     } catch {
       return false;
     }
