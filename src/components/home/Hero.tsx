@@ -6,7 +6,6 @@ import { IMG } from '../../data/images';
 import { useData } from '../../contexts/DataContext';
 import { useMouseParallax } from '../../hooks/useMouseParallax';
 import { EASE_SMOOTH } from '../../animations/variants';
-import { formatPrice } from '../../utils/format';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/format';
 
@@ -25,10 +24,10 @@ const scenes = [
     alt: 'Model wearing Samedi design essential big size fashion collection',
     label: 'Bigsize & Trend Edit',
     cards: [
-      { id: 'air-max-270', image: IMG.heroFloating.first.topLeft },
-      { id: 'smart-watch-series-9', image: IMG.heroFloating.first.topRight },
-      { id: 'wireless-headphones', image: IMG.heroFloating.first.bottomLeft },
-      { id: 'stainless-steel-bottle', image: IMG.heroFloating.first.bottomRight }
+      { id: 'air-max-270', image: IMG.heroFloating.first.topLeft, name: 'T-shirt', price: 10000 },
+      { id: 'smart-watch-series-9', image: IMG.heroFloating.first.topRight, name: 'Black eye glass', price: 6000 },
+      { id: 'wireless-headphones', image: IMG.heroFloating.first.bottomLeft, name: 'Short Jean pant', price: 16000 },
+      { id: 'stainless-steel-bottle', image: IMG.heroFloating.first.bottomRight, name: 'Black Airforce', price: 28000 }
     ]
   },
   {
@@ -37,10 +36,10 @@ const scenes = [
     alt: 'Model wearing Samedi design street style and relaxed tailoring',
     label: 'Biryogo Nyamirambo Edit',
     cards: [
-      { id: 'oversized-crewneck', image: IMG.heroFloating.second.topLeft },
-      { id: 'aviator-sunglasses', image: IMG.heroFloating.second.topRight },
-      { id: 'canvas-weekender', image: IMG.heroFloating.second.bottomLeft },
-      { id: 'linen-wide-trousers', image: IMG.heroFloating.second.bottomRight }
+      { id: 'Jeans pant', image: IMG.heroFloating.second.topLeft, name: 'Jeans Pant', price: 18000 },
+      { id: 'aviator-sunglasses', image: IMG.heroFloating.second.topRight, name: 'Leather jacket', price: 40000 },
+      { id: 'canvas-weekender', image: IMG.heroFloating.second.bottomLeft, name: 'white Airforce', price: 28000 },
+      { id: 'linen-wide-trousers', image: IMG.heroFloating.second.bottomRight, name: 'Bowling bag', price: 30000 }
     ]
   }
 ];
@@ -54,6 +53,9 @@ const floatPositions = [
 
 
 const avatars = IMG.clients;
+
+// Hero card prices are entered directly in Rwandan francs in `scenes`.
+const formatHeroPrice = (price: number) => `${price.toLocaleString('en-US', { maximumFractionDigits: 20 })} FRW`;
 
 export function Hero() {
   const { products, siteContent } = useData();
@@ -210,8 +212,16 @@ export function Hero() {
 
           {scene.cards.map((card, index) => {
             const product = products.find((item) => item.id === card.id);
-            if (!product) return null;
             const position = floatPositions[index];
+            const name = card.name;
+            const cardContent = <>
+              <img
+                src={card.image}
+                alt={name}
+                className="aspect-square w-full rounded-xl bg-canvas object-cover" />
+              <p className="mt-2 truncate text-[11.5px] font-semibold text-ink">{name}</p>
+              <p className="text-[11px] font-medium text-accent">{formatHeroPrice(card.price)}</p>
+            </>;
             return (
               <motion.div
                 key={`${scene.id}-${card.id}`}
@@ -231,18 +241,15 @@ export function Hero() {
                   animate={reduceMotion ? undefined : { y: [0, -9, 0] }}
                   transition={{ duration: position.duration, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}>
                   
+                  {product ?
                   <Link
                     to={`/product/${product.id}`}
                     className="block w-[124px] rounded-2xl border border-line bg-white p-2.5 shadow-float transition-transform duration-300 ease-smooth hover:-translate-y-1 lg:w-[136px]">
-                    
-                    <img
-                      src={card.image}
-                      alt={product.name}
-                      className="aspect-square w-full rounded-xl bg-canvas object-cover" />
-                    
-                    <p className="mt-2 truncate text-[11.5px] font-semibold text-ink">{product.name}</p>
-                    <p className="text-[11px] font-medium text-accent">{formatPrice(product.price)}</p>
-                  </Link>
+                    {cardContent}
+                  </Link> :
+                  <div className="w-[124px] rounded-2xl border border-line bg-white p-2.5 shadow-float lg:w-[136px]">
+                    {cardContent}
+                  </div>}
                 </motion.div>
               </motion.div>);
 
