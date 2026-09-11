@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { products as initialProducts } from '../data/products';
 import { blogPosts as initialBlogPosts } from '../data/blog';
 import { announcements as initialAnnouncements } from '../data/site';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
 import type { Product, BlogPost } from '../types';
 
 export interface SiteContent {
@@ -77,6 +77,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     async function loadRemote() {
+      // Skip remote sync if Supabase env vars are not set (e.g., in Vercel production without DB)
+      if (!supabaseUrl || !supabaseAnonKey) {
+        console.warn('Supabase URL or ANON KEY not configured; skipping remote data sync.');
+        return;
+      }
       try {
         const { data: remoteProducts, error: pErr } = await supabase.from('products').select('*');
         if (!pErr && remoteProducts && remoteProducts.length > 0 && isMounted) {

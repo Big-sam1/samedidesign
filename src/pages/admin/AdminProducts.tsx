@@ -24,6 +24,7 @@ export function AdminProducts() {
   const [isCreating, setIsCreating] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [page, setPage] = useState(1);
+  const pageSize = 5;
   const categories = [
     { value: 'all', label: 'All Categories' },
     { value: 'pants', label: 'Men pants' },
@@ -33,11 +34,12 @@ export function AdminProducts() {
     { value: 'hoodies-vests', label: 'Men Hoodies and Vest' }
   ];
 
-  const filtered = products.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = categoryFilter === 'all' || p.category === categoryFilter;
+  const filtered = (products || []).filter((p) => {
+    const name = p?.name ? String(p.name).toLowerCase() : '';
+    const category = p?.category ? String(p.category).toLowerCase() : '';
+    const q = search.trim().toLowerCase();
+    const matchesSearch = !q || name.includes(q) || category.includes(q);
+    const matchesCat = categoryFilter === 'all' || p?.category === categoryFilter;
     return matchesSearch && matchesCat;
   });
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -196,68 +198,73 @@ export function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {visibleProducts.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/50 transition">
-                  {/* Images Column: Original + Swapped Hover Preview */}
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="relative group">
-                        <img
-                          src={item.images[0]}
-                          alt="Primary"
-                          className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
-                        />
-                        <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[9px] text-white text-center py-0.5 rounded-b-xl">
-                          Original
-                        </span>
-                      </div>
+              {(visibleProducts || []).map((item) => {
+                const primaryImage = item.images?.[0] || '/samed-design-logo.png';
+                const hoverImage = item.images?.[1] || null;
+                const sizesList = Array.isArray(item.sizes) ? item.sizes : [];
 
-                      {item.images[1] ? (
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                    {/* Images Column: Original + Swapped Hover Preview */}
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
                         <div className="relative group">
                           <img
-                            src={item.images[1]}
-                            alt="Hovered"
-                            className="h-12 w-12 rounded-xl object-cover border border-blue-200 bg-blue-50"
+                            src={primaryImage}
+                            alt="Primary"
+                            className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
                           />
-                          <span className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5 rounded-b-xl">
-                            Hovered
+                          <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[9px] text-white text-center py-0.5 rounded-b-xl">
+                            Original
                           </span>
                         </div>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic">No hover image</span>
-                      )}
-                    </div>
-                  </td>
 
-                  {/* Name and Category */}
-                  <td className="py-3 px-4">
-                    <p className="font-bold text-slate-900">{item.name}</p>
-                    <p className="text-[11px] text-slate-400 capitalize">{item.category} · Stock: {item.stock}</p>
-                  </td>
+                        {hoverImage ? (
+                          <div className="relative group">
+                            <img
+                              src={hoverImage}
+                              alt="Hovered"
+                              className="h-12 w-12 rounded-xl object-cover border border-blue-200 bg-blue-50"
+                            />
+                            <span className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5 rounded-b-xl">
+                              Hovered
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 italic">No hover image</span>
+                        )}
+                      </div>
+                    </td>
 
-                  {/* Price */}
-                  <td className="py-3 px-4 font-bold text-slate-900">
-                    {formatPrice(item.price)}
-                    {item.oldPrice && (
-                      <span className="block text-[10px] text-slate-400 line-through">
-                        {formatPrice(item.oldPrice)}
-                      </span>
-                    )}
-                  </td>
+                    {/* Name and Category */}
+                    <td className="py-3 px-4">
+                      <p className="font-bold text-slate-900">{item.name}</p>
+                      <p className="text-[11px] text-slate-400 capitalize">{item.category} · Stock: {item.stock ?? 0}</p>
+                    </td>
 
-                  {/* Sizes */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {item.sizes.map((s) => (
-                        <span
-                          key={s}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
-                        >
-                          {s}
+                    {/* Price */}
+                    <td className="py-3 px-4 font-bold text-slate-900">
+                      {formatPrice(item.price || 0)}
+                      {item.oldPrice && (
+                        <span className="block text-[10px] text-slate-400 line-through">
+                          {formatPrice(item.oldPrice)}
                         </span>
-                      ))}
-                    </div>
-                  </td>
+                      )}
+                    </td>
+
+                    {/* Sizes */}
+                    <td className="py-3 px-4">
+                      <div className="flex flex-wrap gap-1 max-w-xs">
+                        {sizesList.map((s) => (
+                          <span
+                            key={s}
+                            className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
 
                   {/* Badges / Flags */}
                   <td className="py-3 px-4">
@@ -298,7 +305,8 @@ export function AdminProducts() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
