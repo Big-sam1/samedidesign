@@ -47,7 +47,7 @@ export function Login() {
     <AuthShell
       title="Welcome Back"
           subtitle="Log in to your Samedi design account."
-      image={IMG.headphones}
+      image={IMG.loginForm}
       imageHeadline="Better Fits, Brighter Days"
       imageCaption="Curated clothes, big size fashion and streetwear."
       footer={

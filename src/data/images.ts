@@ -21,12 +21,16 @@ import t2Image from './t2.jpg';
 import t3Image from './t3.jpg';
 import t4Image from './t4.png';
 import t5Image from './t5.jpg';
+import loginFormImage from './form.png';
+import newCollectionImage from './n.png';
 
 const publicImage = (fileName: string) => `/${fileName}`;
 
 export const IMG = {
   hero: heroImage,
   heroAlt: heroAltImage,
+  loginForm: loginFormImage,
+  newCollection: newCollectionImage,
   heroFloating: {
     first: {
       topLeft: firstFloatingTopLeftImage,

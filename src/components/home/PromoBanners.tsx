@@ -77,7 +77,7 @@ export function PromoBanners() {
         className="group relative overflow-hidden rounded-3xl bg-[#101216] p-7 sm:p-9">
         
         <motion.img
-          src={IMG.promoFitness}
+          src={IMG.newCollection}
           alt=""
           aria-hidden="true"
           initial={{ scale: 1.06 }}
