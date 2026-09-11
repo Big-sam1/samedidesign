@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IMG } from '../data/images';
 import { useStore } from '../contexts/StoreContext';
-import { ADMIN_EMAIL } from '../utils/adminAuth';
+
 import { AuthShell } from '../components/auth/AuthShell';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -21,7 +21,7 @@ export function Login() {
     const next: { email?: string; password?: string } = {};
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Enter a valid email address';
     if (password.length < 6) next.password = 'Password must be at least 6 characters';
-    if (email.trim().toLowerCase() === ADMIN_EMAIL) next.email = 'Use the administrator login at /admin/login';
+    // Administrator access is handled exclusively at /admin/login.
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 

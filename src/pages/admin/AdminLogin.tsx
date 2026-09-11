@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheckIcon, EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
-import { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_SESSION_KEY } from '../../utils/adminAuth';
+import { ADMIN_SESSION_KEY } from '../../utils/adminAuth';
+import { supabase } from '../../lib/supabase';
 import { useStore } from '../../contexts/StoreContext';
 
 export function AdminLogin() {
@@ -18,19 +19,25 @@ export function AdminLogin() {
     setError('');
     setLoading(true);
 
-    await new Promise((res) => setTimeout(res, 500)); // brief loading feel
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
 
-    const emailMatch = email.trim().toLowerCase() === ADMIN_EMAIL;
-    const passMatch = password === ADMIN_PASSWORD;
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
 
-    if (emailMatch && passMatch) {
       localStorage.setItem(ADMIN_SESSION_KEY, 'true');
       activateAdminSession();
       navigate('/admin', { replace: true });
-    } else {
-      setError('Invalid admin credentials. Please try again.');
+    } catch {
+      setError('Could not sign in with Supabase. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
