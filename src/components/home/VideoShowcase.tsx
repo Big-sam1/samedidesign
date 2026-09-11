@@ -21,35 +21,35 @@ export interface ShoeItem {
 export const shoesList: ShoeItem[] = [
   {
     id: 'shoe-1',
-    name: 'Classic High-Top Canvas',
+    name: 'Skate shoes',
     price: formatPrice(45),
     sizes: 'Sizes 40 – 46',
     image: shoe1Image
   },
   {
     id: 'shoe-2',
-    name: 'Rugged Heritage Leather Boot',
+    name: 'Timberland shoes',
     price: formatPrice(75),
     sizes: 'Sizes 40 – 48 (Big Size)',
     image: shoe2Image
   },
   {
     id: 'shoe-3',
-    name: 'Turbo Velox Trainer Sneaker',
+    name: 'Air jordan 4 shoes',
     price: formatPrice(55),
     sizes: 'Sizes 38 – 45',
     image: shoe3Image
   },
   {
     id: 'shoe-4',
-    name: 'Handcrafted Cognac Leather Low',
+    name: 'Sport shoes',
     price: formatPrice(65),
     sizes: 'Sizes 40 – 47',
     image: shoe4Image
   },
   {
     id: 'shoe-5',
-    name: 'Air Cushion Performance Runner',
+    name: 'Leather shoes',
     price: formatPrice(60),
     sizes: 'Sizes 39 – 46',
     image: shoe5Image

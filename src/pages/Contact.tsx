@@ -140,8 +140,8 @@ export function Contact() {
                 noValidate>
                 
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <Input label="Name" name="name" value={fields.name} onChange={setField('name')} error={errors.name} placeholder="Samuel Mugisha" />
-                    <Input label="Email" name="email" type="email" value={fields.email} onChange={setField('email')} error={errors.email} placeholder="you@email.com" />
+                    <Input label="Name" name="name" value={fields.name} onChange={setField('name')} error={errors.name} placeholder="Your name" />
+                    <Input label="Email" name="email" type="email" value={fields.email} onChange={setField('email')} error={errors.email} placeholder="your@email.com" />
                   </div>
                   <Textarea label="Message" name="message" value={fields.message} onChange={setField('message')} error={errors.message} placeholder="How can we help?" />
                   {submitError && (

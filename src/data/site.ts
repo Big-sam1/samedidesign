@@ -24,7 +24,7 @@ export const trustStrip: {title: string;detail: string;}[] = [
 
 export const testimonials: Testimonial[] = [
 {
-  name: 'Elena Fischer',
+  name: 'Elena Katheline',
   role: 'Verified buyer · Berlin',
   quote:
   'The hoodie arrived in three days and the fabric weight is exactly what the description promised. It has replaced everything else in my rotation.',
@@ -32,7 +32,7 @@ export const testimonials: Testimonial[] = [
   avatar: IMG.avatar1
 },
 {
-  name: 'Marcus Lee',
+  name: 'KEZA Daniella',
   role: 'Verified buyer · Singapore',
   quote:
   'I returned a pair of trainers for a half size up and it took under two minutes. That is the part most stores get wrong.',
@@ -40,26 +40,26 @@ export const testimonials: Testimonial[] = [
   avatar: IMG.avatar2
 },
 {
-  name: 'Aisha Bello',
-  role: 'Verified buyer · Lagos',
+  name: 'NTARE James',
+  role: 'Verified buyer · Samede design',
   quote:
   'Packaging was minimal and recyclable, and the serum was sealed properly. Small details, but they are why I reorder here.',
   rating: 4,
   avatar: IMG.avatar3
 },
 {
-  name: 'Priya Raman',
-  role: 'Verified buyer · Bengaluru',
+  name: 'Big Sam',
+  role: 'DMD  · Founder & CEO of Dream Maker Developers',
   quote:
   'The product photos actually match what shows up. I ordered the watch expecting to send it back and it has not left my wrist since.',
   rating: 5,
   avatar: IMG.avatar4
 },
 {
-  name: 'Tom Bergström',
-  role: 'Verified buyer · Stockholm',
+  name: 'Elia IRANZI',
+  role: 'DMD · Marketing promoter',
   quote:
-  'Support answered a shipping question at 11pm on a Sunday with a real answer, not a template. That earned my next three orders.',
+  'Samedi Design Shop — Muri abambere mutanga imyenda umuntu yambara akaberwa atasanga ahandi!',
   rating: 5,
   avatar: IMG.avatar5
 }];
