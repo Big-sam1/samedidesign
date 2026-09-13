@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, Outlet, useNavigate, Link, Navigate } from 'react-router-dom';
 import {
   LayoutDashboardIcon,
@@ -12,7 +12,9 @@ import {
   XIcon,
   ExternalLinkIcon,
   StoreIcon,
-  UserCheckIcon
+  UserCheckIcon,
+  MoonIcon,
+  SunIcon
 } from 'lucide-react';
 import { useStore } from '../../contexts/StoreContext';
 import { cn } from '../../utils/format';
@@ -23,6 +25,11 @@ export function AdminLayout() {
   const { adminUser, logout } = useStore();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => window.localStorage.getItem('samedidesign.admin.theme') === 'dark');
+
+  useEffect(() => {
+    window.localStorage.setItem('samedidesign.admin.theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
   if (!hasAdminSession()) return <Navigate to="/admin/login" replace />;
 
@@ -37,7 +44,7 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className="admin-portal min-h-screen bg-slate-100 text-slate-800 flex font-sans">
+    <div className={cn('admin-portal min-h-screen bg-slate-100 text-slate-800 flex font-sans', darkMode && 'admin-dark')}>
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div
@@ -151,6 +158,16 @@ export function AdminLayout() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setDarkMode((current) => !current)}
+              className="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+              aria-label={darkMode ? 'Switch admin portal to light mode' : 'Switch admin portal to dark mode'}
+              aria-pressed={darkMode}
+              title={darkMode ? 'Light mode' : 'Dark mode'}
+            >
+              {darkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            </button>
             <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 border border-emerald-200">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               Connected: Firebase & Supabase

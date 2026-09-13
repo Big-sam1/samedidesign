@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { products as initialProducts } from '../data/products';
 import { blogPosts as initialBlogPosts } from '../data/blog';
 import { announcements as initialAnnouncements } from '../data/site';
-import { supabase, supabaseUrl, supabaseAnonKey } from '../lib/supabase';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { Product, BlogPost } from '../types';
 
 export interface SiteContent {
@@ -77,9 +77,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     async function loadRemote() {
-      // Skip remote sync if Supabase env vars are not set (e.g., in Vercel production without DB)
-      if (!supabaseUrl || !supabaseAnonKey) {
-        console.warn('Supabase URL or ANON KEY not configured; skipping remote data sync.');
+      // Local data remains usable when Supabase has not been configured for this deployment.
+      if (!isSupabaseConfigured) {
         return;
       }
       try {
@@ -100,8 +99,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           setSiteContent((prev) => ({ ...prev, ...remoteContent }));
           localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(remoteContent));
         }
-      } catch (err) {
-        console.warn('Supabase remote sync bypassed:', err);
+      } catch {
+        // A temporary remote failure must not interrupt the locally cached storefront.
       }
     }
     loadRemote();
@@ -140,6 +139,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
     const channel = supabase
       .channel('samedidesign-data-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
@@ -172,6 +173,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Realtime Broadcast Channel to sync between admin and customer devices in real-time
   useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
     const syncChannel = supabase.channel('samedidesign-live-updates', {
       config: { broadcast: { self: false } }
     });

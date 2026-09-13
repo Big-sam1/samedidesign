@@ -64,7 +64,7 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Welcome Banner - Styled like reference photo */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-8 text-white shadow-lg">
+      <div className="admin-welcome-banner relative overflow-hidden rounded-3xl p-8 text-white shadow-lg">
         <div className="relative z-10 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-100 backdrop-blur-md">
             Welcome Back, {adminUser.name || 'Administrator'}
