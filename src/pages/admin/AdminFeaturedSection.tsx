@@ -196,7 +196,7 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
               onClick={() => setPage(pageNumber)}
               aria-current={page === pageNumber ? 'page' : undefined}
               className={`grid h-9 min-w-9 place-items-center rounded-lg px-2 text-xs font-bold transition ${
-                page === pageNumber ? 'bg-[#3b2418] text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-100'
+                page === pageNumber ? 'bg-slate-300 text-slate-900' : 'border border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
               {pageNumber}

@@ -37,7 +37,7 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className="admin-portal min-h-screen bg-[#f5eee8] text-[#2b1b13] flex font-sans">
+    <div className="admin-portal min-h-screen bg-slate-100 text-slate-800 flex font-sans">
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div
@@ -49,27 +49,27 @@ export function AdminLayout() {
       {/* Sidebar - Matching Reference Design (Left Panel) */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-[#3b2418] text-white shadow-xl transition-transform duration-300 lg:static lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-200 text-slate-800 shadow-xl transition-transform duration-300 lg:static lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-0 -translate-x-full lg:translate-x-0'
         )}
       >
         {/* Logo / Brand Header */}
-        <div className="flex h-20 items-center justify-between px-6 border-b border-white/10">
+        <div className="flex h-20 items-center justify-between px-6 border-b border-slate-300">
           <div className="flex items-center gap-3">
             <img
               src="/samed-design-logo.png"
               alt="Samedi design"
-              className="h-10 w-10 rounded-full border-2 border-white/30 object-cover"
+              className="h-10 w-10 rounded-full border-2 border-slate-400 object-cover"
               style={{ borderRadius: '100%' }}
             />
             <div>
-              <span className="block text-base font-bold tracking-tight text-white leading-tight">Samedi Admin</span>
-              <span className="block text-[11px] text-blue-200">Management Portal</span>
+              <span className="block text-base font-bold tracking-tight text-slate-900 leading-tight">Samedi Admin</span>
+              <span className="block text-[11px] text-slate-500">Management Portal</span>
             </div>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-1.5 text-blue-200 hover:bg-white/10 lg:hidden"
+            className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-300 lg:hidden"
           >
             <XIcon className="h-5 w-5" />
           </button>
@@ -77,7 +77,7 @@ export function AdminLayout() {
 
         {/* Navigation Links */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5">
-          <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-blue-200/80 mb-2">Main Menu</p>
+          <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Main Menu</p>
           {navItems.map((item) => (
             <NavLink
               key={item.to}
@@ -88,8 +88,8 @@ export function AdminLayout() {
                 cn(
                   'flex items-center gap-3.5 rounded-xl px-3.5 py-3 text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'bg-white text-[#0B57D0] shadow-sm font-semibold'
-                    : 'text-blue-100 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white text-slate-900 shadow-sm font-semibold'
+                    : 'text-slate-600 hover:bg-slate-300 hover:text-slate-900'
                 )
               }
             >
@@ -99,28 +99,28 @@ export function AdminLayout() {
           ))}
 
           <div className="pt-6">
-            <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-blue-200/80 mb-2">Live Store</p>
+            <p className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2">Live Store</p>
             <Link
               to="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm text-blue-100 transition hover:bg-white/10 hover:text-white"
+              className="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm text-slate-600 transition hover:bg-slate-300 hover:text-slate-900"
             >
               <span className="flex items-center gap-3">
                 <StoreIcon className="h-4 w-4" />
                 View Website
               </span>
-              <ExternalLinkIcon className="h-3.5 w-3.5 text-blue-300" />
+              <ExternalLinkIcon className="h-3.5 w-3.5 text-slate-500" />
             </Link>
           </div>
         </div>
 
         {/* User / Logout in Footer */}
-        <div className="p-4 border-t border-white/10 bg-blue-900/30">
+        <div className="p-4 border-t border-slate-300 bg-slate-300/70">
           <div className="flex items-center justify-between">
             <div className="min-w-0 pr-2">
-              <p className="truncate text-xs font-semibold text-white">{adminUser.name}</p>
-              <p className="truncate text-[11px] text-blue-200">{adminUser.email}</p>
+              <p className="truncate text-xs font-semibold text-slate-800">{adminUser.name}</p>
+              <p className="truncate text-[11px] text-slate-500">{adminUser.email}</p>
             </div>
             <button
               onClick={async () => {
@@ -128,7 +128,7 @@ export function AdminLayout() {
                 navigate('/admin/login');
               }}
               title="Logout"
-              className="grid h-8 w-8 place-items-center rounded-lg bg-white/10 text-white hover:bg-red-500 hover:text-white transition-colors"
+              className="grid h-8 w-8 place-items-center rounded-lg bg-white text-slate-700 hover:bg-red-500 hover:text-white transition-colors"
             >
               <LogOutIcon className="h-4 w-4" />
             </button>

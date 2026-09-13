@@ -93,7 +93,7 @@ h4 {
   }
 }
 
-/* Admin workspace palette: warm dark chocolate replaces the storefront blues. */
+/* Admin workspace palette: neutral light grey keeps the portal clear on every screen size. */
 .admin-portal .bg-blue-600,
 .admin-portal .bg-blue-500,
 .admin-portal .bg-indigo-500,
@@ -101,34 +101,34 @@ h4 {
 .admin-portal .bg-\[\#0B57D0\],
 .admin-portal .bg-\[\#1565C0\],
 .admin-portal .bg-\[\#0D47A1\] {
-  background-color: #3b2418 !important;
+  background-color: #e5e7eb !important;
 }
 .admin-portal .bg-gradient-to-r {
-  background-image: linear-gradient(to right, #3b2418, #5a3826, #2a1810) !important;
+  background-image: linear-gradient(to right, #f3f4f6, #e5e7eb, #d1d5db) !important;
 }
 .admin-portal .text-blue-600,
 .admin-portal .text-indigo-600,
 .admin-portal .text-blue-700,
 .admin-portal .text-indigo-700 {
-  color: #6b422d !important;
+  color: #334155 !important;
 }
 .admin-portal .text-blue-100,
 .admin-portal .text-blue-200,
 .admin-portal .text-blue-300 {
-  color: #ead8ca !important;
+  color: #64748b !important;
 }
 .admin-portal .bg-blue-50,
 .admin-portal .bg-indigo-50,
 .admin-portal .bg-blue-100 {
-  background-color: #f1e3d9 !important;
+  background-color: #f8fafc !important;
 }
 .admin-portal .border-blue-200,
 .admin-portal .border-blue-300,
 .admin-portal .border-indigo-400 {
-  border-color: #b58b70 !important;
+  border-color: #cbd5e1 !important;
 }
 .admin-portal .hover\:bg-blue-700:hover,
 .admin-portal .hover\:bg-blue-100:hover,
 .admin-portal .hover\:bg-indigo-700:hover {
-  background-color: #2a1810 !important;
+  background-color: #d1d5db !important;
 }
