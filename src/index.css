@@ -146,6 +146,21 @@ h4 {
   min-height: 100dvh;
   background: #ffffff !important;
 }
+.admin-login .admin-login-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  color-scheme: light;
+}
+.admin-login .admin-login-card .text-slate-900,
+.admin-login .admin-login-card .text-slate-800,
+.admin-login .admin-login-card .text-slate-700 {
+  color: #0f172a !important;
+}
+.admin-login .admin-login-card .text-slate-600,
+.admin-login .admin-login-card .text-slate-500,
+.admin-login .admin-login-card .text-slate-400 {
+  color: #475569 !important;
+}
 .admin-login input {
   background-color: #ffffff !important;
   color: #0f172a !important;

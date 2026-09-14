@@ -60,7 +60,7 @@ export function AdminLogin() {
         </div>
 
         {/* Login Card */}
-        <div className="rounded-3xl border border-slate-200 bg-white px-8 py-10">
+        <div className="admin-login-card rounded-3xl border border-slate-200 bg-white px-8 py-10">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
               <ShieldCheckIcon className="h-5 w-5 text-slate-700" />
