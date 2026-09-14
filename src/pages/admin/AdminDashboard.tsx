@@ -104,7 +104,7 @@ export function AdminDashboard() {
           <Link
             key={item.label}
             to={item.to}
-            className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:shadow-md hover:border-blue-300 flex flex-col justify-between"
+            className="admin-surface group rounded-2xl border border-slate-200 bg-white p-6 shadow-xs transition hover:shadow-md hover:border-blue-300 flex flex-col justify-between"
           >
             <div className="flex items-center justify-between">
               <span className={`grid h-12 w-12 place-items-center rounded-xl ${item.light}`}>
@@ -126,7 +126,7 @@ export function AdminDashboard() {
       {/* 2 Column Layout - Recent Products & Store Info */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left 2 Cols: Quick Product Preview */}
-        <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="admin-surface lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900">Featured Store Items</h3>
@@ -176,7 +176,7 @@ export function AdminDashboard() {
 
         {/* Right 1 Col: Live Contact & WhatsApp Config */}
         <div className="space-y-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+          <div className="admin-surface rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
             <h3 className="text-base font-bold text-slate-900 mb-4">Store Identity</h3>
             <div className="space-y-4 text-xs">
               <div className="flex items-start gap-3">

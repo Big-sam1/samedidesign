@@ -41,17 +41,11 @@ export function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-white via-slate-100 to-slate-200 px-4">
-      {/* Background decorative shapes */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 h-80 w-80 rounded-full bg-slate-300/30 blur-3xl" />
-        <div className="absolute bottom-0 -left-20 h-96 w-96 rounded-full bg-slate-300/30 blur-3xl" />
-      </div>
-
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
       <div className="relative w-full max-w-md">
         {/* Logo card */}
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-xl mb-4">
+          <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-200 bg-white mb-4">
             <img
               src="/samed-design-logo.png"
               alt="Samedi design"
@@ -66,7 +60,7 @@ export function AdminLogin() {
         </div>
 
         {/* Login Card */}
-        <div className="rounded-3xl bg-white shadow-2xl px-8 py-10">
+        <div className="rounded-3xl border border-slate-200 bg-white px-8 py-10">
           <div className="mb-6 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100">
               <ShieldCheckIcon className="h-5 w-5 text-slate-700" />
@@ -93,7 +87,7 @@ export function AdminLogin() {
                   placeholder="samedidesign@gmail.com"
                   required
                   autoComplete="username"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition"
+                  className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition"
                 />
               </div>
             </div>
@@ -113,7 +107,7 @@ export function AdminLogin() {
                   placeholder="Enter admin password"
                   required
                   autoComplete="current-password"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-12 py-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition"
+                  className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-12 py-3 text-sm text-slate-900 placeholder:text-slate-500 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/20 transition"
                 />
                 <button
                   type="button"

@@ -140,6 +140,15 @@ h4 {
   background-color: #0f172a;
   color: #e2e8f0;
 }
+.admin-portal.admin-dark .admin-main,
+.admin-portal.admin-dark main {
+  background-color: #0f172a;
+}
+.admin-portal.admin-dark .admin-sidebar,
+.admin-portal.admin-dark .admin-topbar,
+.admin-portal.admin-dark .admin-surface {
+  background-color: #1e293b !important;
+}
 .admin-portal.admin-dark .bg-white,
 .admin-portal.admin-dark .bg-white\/95 {
   background-color: #1e293b !important;
@@ -179,6 +188,20 @@ h4 {
 .admin-portal.admin-dark select {
   background-color: #0f172a !important;
   color: #f8fafc !important;
+  caret-color: #f8fafc;
+  color-scheme: dark;
+}
+.admin-portal.admin-dark input::placeholder,
+.admin-portal.admin-dark textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1;
+}
+.admin-portal.admin-dark input:-webkit-autofill,
+.admin-portal.admin-dark input:-webkit-autofill:hover,
+.admin-portal.admin-dark input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc;
+  -webkit-box-shadow: 0 0 0 1000px #0f172a inset;
+  caret-color: #f8fafc;
 }
 .admin-portal.admin-dark .hover\:bg-slate-50:hover,
 .admin-portal.admin-dark .hover\:bg-slate-100:hover,

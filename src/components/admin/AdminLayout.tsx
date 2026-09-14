@@ -56,7 +56,7 @@ export function AdminLayout() {
       {/* Sidebar - Matching Reference Design (Left Panel) */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-200 text-slate-800 shadow-xl transition-transform duration-300 lg:static lg:translate-x-0',
+          'admin-sidebar fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-slate-200 text-slate-800 shadow-xl transition-transform duration-300 lg:static lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-0 -translate-x-full lg:translate-x-0'
         )}
       >
@@ -144,9 +144,9 @@ export function AdminLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="admin-main flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md sm:px-8">
+        <header className="admin-topbar sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-200 bg-white/95 px-4 backdrop-blur-md sm:px-8">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
