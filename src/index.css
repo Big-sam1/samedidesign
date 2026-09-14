@@ -277,3 +277,63 @@ h4 {
 .admin-portal.admin-dark .admin-welcome-banner {
   background: linear-gradient(110deg, #0f172a, #1e293b, #334155);
 }
+
+/* Mobile browsers can retain the storefront colour scheme on nested utility
+   classes. Re-apply each admin surface directly inside the main workspace. */
+@media (max-width: 1023px) {
+  .admin-portal.admin-light .admin-main,
+  .admin-portal.admin-light .admin-main main {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+  }
+  .admin-portal.admin-light .admin-main [class~="bg-white"],
+  .admin-portal.admin-light .admin-main [class~="bg-slate-50"],
+  .admin-portal.admin-light .admin-main [class~="bg-slate-100"] {
+    background-color: #ffffff !important;
+  }
+  .admin-portal.admin-light .admin-main [class~="text-slate-900"],
+  .admin-portal.admin-light .admin-main [class~="text-slate-800"],
+  .admin-portal.admin-light .admin-main [class~="text-slate-700"] {
+    color: #0f172a !important;
+  }
+  .admin-portal.admin-light .admin-main [class~="text-slate-600"],
+  .admin-portal.admin-light .admin-main [class~="text-slate-500"],
+  .admin-portal.admin-light .admin-main [class~="text-slate-400"] {
+    color: #475569 !important;
+  }
+  .admin-portal.admin-light .admin-main input,
+  .admin-portal.admin-light .admin-main textarea,
+  .admin-portal.admin-light .admin-main select {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a;
+  }
+  .admin-portal.admin-dark .admin-main,
+  .admin-portal.admin-dark .admin-main main {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+  }
+  .admin-portal.admin-dark .admin-main [class~="bg-white"],
+  .admin-portal.admin-dark .admin-main [class~="bg-slate-50"],
+  .admin-portal.admin-dark .admin-main [class~="bg-slate-100"],
+  .admin-portal.admin-dark .admin-main [class~="bg-slate-200"] {
+    background-color: #1e293b !important;
+  }
+  .admin-portal.admin-dark .admin-main [class~="text-slate-900"],
+  .admin-portal.admin-dark .admin-main [class~="text-slate-800"],
+  .admin-portal.admin-dark .admin-main [class~="text-slate-700"] {
+    color: #f8fafc !important;
+  }
+  .admin-portal.admin-dark .admin-main [class~="text-slate-600"],
+  .admin-portal.admin-dark .admin-main [class~="text-slate-500"],
+  .admin-portal.admin-dark .admin-main [class~="text-slate-400"] {
+    color: #cbd5e1 !important;
+  }
+  .admin-portal.admin-dark .admin-main input,
+  .admin-portal.admin-dark .admin-main textarea,
+  .admin-portal.admin-dark .admin-main select {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    -webkit-text-fill-color: #f8fafc;
+  }
+}
