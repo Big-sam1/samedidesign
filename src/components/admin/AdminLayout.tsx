@@ -44,7 +44,7 @@ export function AdminLayout() {
   ];
 
   return (
-    <div className={cn('admin-portal min-h-screen bg-slate-100 text-slate-800 flex font-sans', darkMode && 'admin-dark')}>
+    <div className={cn('admin-portal min-h-screen bg-slate-100 text-slate-800 flex font-sans', darkMode ? 'admin-dark' : 'admin-light')}>
       {/* Mobile Sidebar Backdrop */}
       {sidebarOpen && (
         <div

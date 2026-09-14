@@ -136,6 +136,71 @@ h4 {
 }
 
 /* Admin-only dark mode. It is deliberately independent of the storefront theme. */
+.admin-login,
+.admin-portal.admin-light {
+  color-scheme: light;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+.admin-login {
+  min-height: 100dvh;
+  background: #ffffff !important;
+}
+.admin-login input {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  color-scheme: light;
+}
+.admin-login input::placeholder {
+  color: #64748b !important;
+  opacity: 1;
+}
+.admin-portal.admin-light .admin-main,
+.admin-portal.admin-light main {
+  background-color: #f8fafc !important;
+}
+.admin-portal.admin-light .admin-sidebar {
+  background-color: #e2e8f0 !important;
+}
+.admin-portal.admin-light .admin-topbar,
+.admin-portal.admin-light .admin-surface,
+.admin-portal.admin-light .bg-white,
+.admin-portal.admin-light .bg-white\/95 {
+  background-color: #ffffff !important;
+}
+.admin-portal.admin-light input,
+.admin-portal.admin-light textarea,
+.admin-portal.admin-light select {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  -webkit-text-fill-color: #0f172a;
+  caret-color: #0f172a;
+  color-scheme: light;
+}
+.admin-portal.admin-light input::placeholder,
+.admin-portal.admin-light textarea::placeholder {
+  color: #64748b !important;
+  opacity: 1;
+}
+.admin-portal.admin-light .text-slate-900,
+.admin-portal.admin-light .text-slate-800,
+.admin-portal.admin-light .text-slate-700 {
+  color: #0f172a !important;
+}
+.admin-portal.admin-light .text-slate-600,
+.admin-portal.admin-light .text-slate-500,
+.admin-portal.admin-light .text-slate-400 {
+  color: #475569 !important;
+}
+.admin-portal.admin-light .border-slate-100,
+.admin-portal.admin-light .border-slate-200,
+.admin-portal.admin-light .border-slate-300,
+.admin-portal.admin-light .border-slate-400,
+.admin-portal.admin-light .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #dbe2ea !important;
+}
 .admin-portal.admin-dark {
   background-color: #0f172a;
   color: #e2e8f0;

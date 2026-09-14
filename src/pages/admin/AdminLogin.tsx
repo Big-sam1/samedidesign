@@ -41,7 +41,7 @@ export function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
+    <div className="admin-login min-h-screen flex flex-col items-center justify-center bg-white px-4">
       <div className="relative w-full max-w-md">
         {/* Logo card */}
         <div className="mb-8 flex flex-col items-center text-center">
