@@ -101,7 +101,7 @@ h4 {
 .admin-portal .bg-\[\#0B57D0\],
 .admin-portal .bg-\[\#1565C0\],
 .admin-portal .bg-\[\#0D47A1\] {
-  background-color: #e5e7eb !important;
+  background-color: #f4551d !important;
 }
 .admin-portal .text-blue-600,
 .admin-portal .text-indigo-600,
@@ -125,8 +125,10 @@ h4 {
   border-color: #cbd5e1 !important;
 }
 .admin-portal .hover\:bg-blue-700:hover,
-.admin-portal .hover\:bg-blue-100:hover,
 .admin-portal .hover\:bg-indigo-700:hover {
+  background-color: #dc4611 !important;
+}
+.admin-portal .hover\:bg-blue-100:hover {
   background-color: #d1d5db !important;
 }
 
@@ -150,6 +152,17 @@ h4 {
   background: #ffffff !important;
   color: #0f172a !important;
   color-scheme: light;
+}
+.admin-login .admin-login-submit,
+.admin-portal .admin-primary-action {
+  background-color: #f4551d !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff;
+}
+.admin-login .admin-login-submit:hover,
+.admin-portal .admin-primary-action:hover {
+  background-color: #dc4611 !important;
+  color: #ffffff !important;
 }
 .admin-login .admin-login-card .text-slate-900,
 .admin-login .admin-login-card .text-slate-800,

@@ -133,7 +133,7 @@ export function AdminProducts() {
 
         <button
           onClick={handleStartCreate}
-          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
+          className="admin-primary-action inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition"
         >
           <PlusIcon className="h-4 w-4" />
           Add New Product
@@ -533,7 +533,7 @@ export function AdminProducts() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-blue-600 px-5 py-2 text-white font-bold hover:bg-blue-700 shadow-sm"
+                  className="admin-primary-action rounded-xl bg-blue-600 px-5 py-2 text-white font-bold hover:bg-blue-700 shadow-sm"
                 >
                   Save Product Changes
                 </button>

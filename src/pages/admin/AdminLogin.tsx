@@ -132,7 +132,7 @@ export function AdminLogin() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-slate-800 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/40 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="admin-login-submit w-full rounded-xl bg-slate-800 py-3 text-sm font-semibold text-white transition hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-500/40 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
