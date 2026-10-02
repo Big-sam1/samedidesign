@@ -57,7 +57,7 @@ export const testimonials: Testimonial[] = [
 },
 {
   name: 'Elia IRANZI',
-  role: 'DMD · Marketing promoter',
+  role: 'Marketing promoter',
   quote:
   'Samedi Design Shop — Muri abambere mutanga imyenda umuntu yambara akaberwa atasanga ahandi!',
   rating: 5,

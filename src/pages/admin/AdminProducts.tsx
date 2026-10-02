@@ -10,11 +10,56 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   SparklesIcon,
-  FlameIcon
+  FlameIcon,
+  Loader2Icon
 } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 import { formatPrice, USD_TO_RWF } from '../../utils/format';
 import type { Product } from '../../types';
+
+/**
+ * Resizes and compresses user-uploaded images in-browser to prevent
+ * storage quota exhaustion and huge network payloads.
+ */
+function compressImage(file: File, maxWidth = 900, maxHeight = 900, quality = 0.8): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+}
 
 export function AdminProducts() {
   const { products, updateProduct, addProduct, deleteProduct } = useData();
@@ -22,6 +67,7 @@ export function AdminProducts() {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [editing, setEditing] = useState<Product | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [page, setPage] = useState(1);
   const pageSize = 5;
@@ -35,6 +81,7 @@ export function AdminProducts() {
   ];
 
   const filtered = (products || []).filter((p) => {
+    if (!p) return false;
     const name = p?.name ? String(p.name).toLowerCase() : '';
     const category = p?.category ? String(p.category).toLowerCase() : '';
     const q = search.trim().toLowerCase();
@@ -43,14 +90,14 @@ export function AdminProducts() {
     return matchesSearch && matchesCat;
   });
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const visibleProducts = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const visibleProducts = filtered.slice(Math.max(0, (page - 1) * pageSize), page * pageSize);
 
   useEffect(() => {
     setPage(1);
   }, [search, categoryFilter]);
 
   useEffect(() => {
-    setPage((current) => Math.min(current, pageCount));
+    setPage((current) => Math.min(Math.max(1, current), pageCount));
   }, [pageCount]);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -62,17 +109,37 @@ export function AdminProducts() {
       return;
     }
 
-    if (isCreating) {
-      await addProduct(editing);
-      setStatusMsg({ text: `Product "${editing.name}" created successfully!`, type: 'success' });
-    } else {
-      await updateProduct(editing);
-      setStatusMsg({ text: `Product "${editing.name}" updated successfully!`, type: 'success' });
-    }
+    try {
+      setIsSaving(true);
+      const safeProduct: Product = {
+        ...editing,
+        name: editing.name.trim(),
+        price: typeof editing.price === 'number' && !isNaN(editing.price) ? editing.price : Number(editing.price) || 0,
+        oldPrice: editing.oldPrice && !isNaN(Number(editing.oldPrice)) ? Number(editing.oldPrice) : undefined,
+        images: Array.isArray(editing.images) && editing.images.length > 0
+          ? editing.images.map((img) => img || '/samed-design-logo.png')
+          : ['/samed-design-logo.png', '/samed-design-logo.png'],
+        sizes: Array.isArray(editing.sizes) && editing.sizes.length > 0 ? editing.sizes : ['M', 'L', 'XL'],
+        colors: Array.isArray(editing.colors) && editing.colors.length > 0 ? editing.colors : [{ name: 'Default', hex: '#000000' }],
+        stock: typeof editing.stock === 'number' && !isNaN(editing.stock) ? editing.stock : 20
+      };
 
-    setTimeout(() => setStatusMsg(null), 4000);
-    setEditing(null);
-    setIsCreating(false);
+      if (isCreating) {
+        await addProduct(safeProduct);
+        setStatusMsg({ text: `Product "${safeProduct.name}" created successfully!`, type: 'success' });
+      } else {
+        await updateProduct(safeProduct);
+        setStatusMsg({ text: `Product "${safeProduct.name}" updated successfully!`, type: 'success' });
+      }
+
+      setEditing(null);
+      setIsCreating(false);
+    } catch (err: any) {
+      setStatusMsg({ text: `Failed to save product: ${err?.message || 'Error occurred'}`, type: 'error' });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setStatusMsg(null), 4000);
+    }
   };
 
   const handleStartCreate = () => {
@@ -104,20 +171,21 @@ export function AdminProducts() {
     }
   };
 
-  const handleImageUpload = (index: number, file: File) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setStatusMsg({ text: 'Please choose an image under 5MB.', type: 'error' });
+  const handleImageUpload = async (index: number, file: File) => {
+    if (file.size > 10 * 1024 * 1024) {
+      setStatusMsg({ text: 'Please choose an image under 10MB.', type: 'error' });
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (!editing || typeof reader.result !== 'string') return;
-      const images = [...editing.images];
-      images[index] = reader.result;
+    try {
+      const compressed = await compressImage(file);
+      if (!editing) return;
+      const images = Array.isArray(editing.images) ? [...editing.images] : ['/samed-design-logo.png', '/samed-design-logo.png'];
+      images[index] = compressed;
       setEditing({ ...editing, images });
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setStatusMsg({ text: 'Failed to process image file.', type: 'error' });
+    }
   };
 
   return (
@@ -198,115 +266,133 @@ export function AdminProducts() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-700">
-              {(visibleProducts || []).map((item) => {
-                const primaryImage = item.images?.[0] || '/samed-design-logo.png';
-                const hoverImage = item.images?.[1] || null;
-                const sizesList = Array.isArray(item.sizes) ? item.sizes : [];
-
-                return (
-                  <tr key={item.id} className="hover:bg-slate-50/50 transition">
-                    {/* Images Column: Original + Swapped Hover Preview */}
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
-                        <div className="relative group">
-                          <img
-                            src={primaryImage}
-                            alt="Primary"
-                            className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
-                          />
-                          <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[9px] text-white text-center py-0.5 rounded-b-xl">
-                            Original
-                          </span>
-                        </div>
-
-                        {hoverImage ? (
-                          <div className="relative group">
-                            <img
-                              src={hoverImage}
-                              alt="Hovered"
-                              className="h-12 w-12 rounded-xl object-cover border border-blue-200 bg-blue-50"
-                            />
-                            <span className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5 rounded-b-xl">
-                              Hovered
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 italic">No hover image</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Name and Category */}
-                    <td className="py-3 px-4">
-                      <p className="font-bold text-slate-900">{item.name}</p>
-                      <p className="text-[11px] text-slate-400 capitalize">{item.category} · Stock: {item.stock ?? 0}</p>
-                    </td>
-
-                    {/* Price */}
-                    <td className="py-3 px-4 font-bold text-slate-900">
-                      {formatPrice(item.price || 0)}
-                      {item.oldPrice && (
-                        <span className="block text-[10px] text-slate-400 line-through">
-                          {formatPrice(item.oldPrice)}
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Sizes */}
-                    <td className="py-3 px-4">
-                      <div className="flex flex-wrap gap-1 max-w-xs">
-                        {sizesList.map((s) => (
-                          <span
-                            key={s}
-                            className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-
-                  {/* Badges / Flags */}
-                  <td className="py-3 px-4">
-                    <div className="flex flex-col gap-1">
-                      {item.isNew && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 w-fit">
-                          <SparklesIcon className="h-3 w-3" /> New Arrival
-                        </span>
-                      )}
-                      {item.isBestSeller && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 w-fit">
-                          <FlameIcon className="h-3 w-3" /> Best Seller
-                        </span>
-                      )}
-                    </div>
-                  </td>
-
-                  {/* Actions */}
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={() => {
-                          setEditing(item);
-                          setIsCreating(false);
-                        }}
-                        className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition"
-                        title="Edit product"
-                      >
-                        <PencilIcon className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id, item.name)}
-                        className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition"
-                        title="Delete product"
-                      >
-                        <Trash2Icon className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+              {visibleProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-slate-400">
+                    <p className="font-bold text-sm text-slate-700">No products found</p>
+                    <p className="text-xs text-slate-400 mt-1">Try adjusting your search query or category filter above.</p>
                   </td>
                 </tr>
-                );
-              })}
+              ) : (
+                visibleProducts.map((item) => {
+                  if (!item) return null;
+                  const primaryImage = (Array.isArray(item.images) && item.images[0]) || '/samed-design-logo.png';
+                  const hoverImage = (Array.isArray(item.images) && item.images[1]) || null;
+                  const sizesList = Array.isArray(item.sizes) ? item.sizes : [];
+                  const price = typeof item.price === 'number' && !isNaN(item.price) ? item.price : Number(item.price) || 0;
+                  const oldPrice = item.oldPrice !== undefined && item.oldPrice !== null && !isNaN(Number(item.oldPrice)) ? Number(item.oldPrice) : null;
+
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition">
+                      {/* Images Column: Original + Swapped Hover Preview */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="relative group">
+                            <img
+                              src={primaryImage}
+                              alt={item.name || 'Primary'}
+                              className="h-12 w-12 rounded-xl object-cover border border-slate-200 bg-white"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                              }}
+                            />
+                            <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-[9px] text-white text-center py-0.5 rounded-b-xl">
+                              Original
+                            </span>
+                          </div>
+
+                          {hoverImage ? (
+                            <div className="relative group">
+                              <img
+                                src={hoverImage}
+                                alt="Hovered"
+                                className="h-12 w-12 rounded-xl object-cover border border-blue-200 bg-blue-50"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                                }}
+                              />
+                              <span className="absolute bottom-0 left-0 right-0 bg-blue-600/80 text-[9px] text-white text-center py-0.5 rounded-b-xl">
+                                Hovered
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 italic">No hover image</span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Name and Category */}
+                      <td className="py-3 px-4">
+                        <p className="font-bold text-slate-900">{item.name || 'Unnamed Product'}</p>
+                        <p className="text-[11px] text-slate-400 capitalize">{item.category || 'General'} · Stock: {item.stock ?? 0}</p>
+                      </td>
+
+                      {/* Price */}
+                      <td className="py-3 px-4 font-bold text-slate-900">
+                        {formatPrice(price)}
+                        {oldPrice && (
+                          <span className="block text-[10px] text-slate-400 line-through">
+                            {formatPrice(oldPrice)}
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Sizes */}
+                      <td className="py-3 px-4">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {sizesList.map((s, idx) => (
+                            <span
+                              key={`${s}-${idx}`}
+                              className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* Badges / Flags */}
+                      <td className="py-3 px-4">
+                        <div className="flex flex-col gap-1">
+                          {item.isNew && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700 w-fit">
+                              <SparklesIcon className="h-3 w-3" /> New Arrival
+                            </span>
+                          )}
+                          {item.isBestSeller && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 w-fit">
+                              <FlameIcon className="h-3 w-3" /> Best Seller
+                            </span>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => {
+                              setEditing(item);
+                              setIsCreating(false);
+                            }}
+                            className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition"
+                            title="Edit product"
+                          >
+                            <PencilIcon className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id, item.name || 'Product')}
+                            className="rounded-lg border border-slate-200 p-1.5 text-slate-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition"
+                            title="Delete product"
+                          >
+                            <Trash2Icon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -330,7 +416,7 @@ export function AdminProducts() {
               onClick={() => setPage(pageNumber)}
               aria-current={page === pageNumber ? 'page' : undefined}
               className={`grid h-9 min-w-9 place-items-center rounded-lg px-2 text-xs font-bold transition ${
-                page === pageNumber ? 'bg-slate-300 text-slate-900' : 'border border-slate-200 text-slate-600 hover:bg-slate-100'
+                page === pageNumber ? 'bg-[#3b2418] text-white' : 'border border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
               {pageNumber}
@@ -360,7 +446,10 @@ export function AdminProducts() {
                 <p className="text-xs text-slate-500">Edit text, pricing, original &amp; hover swapping images</p>
               </div>
               <button
-                onClick={() => setEditing(null)}
+                onClick={() => {
+                  if (!isSaving) setEditing(null);
+                }}
+                disabled={isSaving}
                 className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100"
               >
                 <XIcon className="h-5 w-5" />
@@ -374,7 +463,7 @@ export function AdminProducts() {
                 <input
                   type="text"
                   required
-                  value={editing.name}
+                  value={editing.name || ''}
                   onChange={(e) => setEditing({ ...editing, name: e.target.value })}
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
@@ -386,9 +475,9 @@ export function AdminProducts() {
                   <label className="block font-bold text-slate-700 mb-1">Price (RWF)</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="1"
                     required
-                    value={Math.round(editing.price * USD_TO_RWF)}
+                    value={Math.round((Number(editing.price) || 0) * USD_TO_RWF)}
                     onChange={(e) => setEditing({ ...editing, price: (parseFloat(e.target.value) || 0) / USD_TO_RWF })}
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-800"
                   />
@@ -398,9 +487,13 @@ export function AdminProducts() {
                   <label className="block font-bold text-slate-700 mb-1">Old Price (RWF)</label>
                   <input
                     type="number"
-                    step="0.01"
-                    value={editing.oldPrice ? Math.round(editing.oldPrice * USD_TO_RWF) : ''}
-                    onChange={(e) => setEditing({ ...editing, oldPrice: parseFloat(e.target.value) ? (parseFloat(e.target.value) / USD_TO_RWF) : undefined })}
+                    step="1"
+                    value={editing.oldPrice ? Math.round((Number(editing.oldPrice) || 0) * USD_TO_RWF) : ''}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      setEditing({ ...editing, oldPrice: val > 0 ? val / USD_TO_RWF : undefined });
+                    }}
+                    placeholder="Optional"
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-800"
                   />
                 </div>
@@ -408,7 +501,7 @@ export function AdminProducts() {
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Category</label>
                   <select
-                    value={editing.category}
+                    value={editing.category || 'pants'}
                     onChange={(e) => setEditing({ ...editing, category: e.target.value })}
                     className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-slate-800"
                   >
@@ -424,8 +517,8 @@ export function AdminProducts() {
                   <label className="block font-bold text-slate-700 mb-1">Stock Units</label>
                   <input
                     type="number"
-                    value={editing.stock || 15}
-                    onChange={(e) => setEditing({ ...editing, stock: parseInt(e.target.value) || 0 })}
+                    value={editing.stock ?? 20}
+                    onChange={(e) => setEditing({ ...editing, stock: parseInt(e.target.value, 10) || 0 })}
                     className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-800"
                   />
                 </div>
@@ -435,12 +528,15 @@ export function AdminProducts() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Original / Default Image</label>
-                  {editing.images[0] && (
+                  {Array.isArray(editing.images) && editing.images[0] && (
                     <div className="mt-2 flex items-center gap-2">
                       <img
                         src={editing.images[0]}
                         alt="Preview original"
                         className="h-10 w-10 rounded-lg object-cover border"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                        }}
                       />
                       <span className="text-[10px] text-slate-400">Original preview</span>
                     </div>
@@ -453,12 +549,15 @@ export function AdminProducts() {
 
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Swapping Hovered Image</label>
-                  {editing.images[1] && (
+                  {Array.isArray(editing.images) && editing.images[1] && (
                     <div className="mt-2 flex items-center gap-2">
                       <img
                         src={editing.images[1]}
                         alt="Preview hover"
                         className="h-10 w-10 rounded-lg object-cover border border-blue-300"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                        }}
                       />
                       <span className="text-[10px] text-blue-600 font-semibold">Hover swapped preview</span>
                     </div>
@@ -477,7 +576,7 @@ export function AdminProducts() {
                 </label>
                 <input
                   type="text"
-                  value={editing.sizes.join(', ')}
+                  value={Array.isArray(editing.sizes) ? editing.sizes.join(', ') : ''}
                   onChange={(e) =>
                     setEditing({
                       ...editing,
@@ -493,7 +592,7 @@ export function AdminProducts() {
                 <label className="block font-bold text-slate-700 mb-1">Description</label>
                 <textarea
                   rows={3}
-                  value={editing.description}
+                  value={editing.description || ''}
                   onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-slate-800"
                 />
@@ -504,7 +603,7 @@ export function AdminProducts() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={editing.isNew || false}
+                    checked={Boolean(editing.isNew)}
                     onChange={(e) => setEditing({ ...editing, isNew: e.target.checked })}
                     className="h-4 w-4 rounded border-slate-300 text-blue-600"
                   />
@@ -514,7 +613,7 @@ export function AdminProducts() {
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={editing.isBestSeller || false}
+                    checked={Boolean(editing.isBestSeller)}
                     onChange={(e) => setEditing({ ...editing, isBestSeller: e.target.checked })}
                     className="h-4 w-4 rounded border-slate-300 text-amber-600"
                   />
@@ -526,16 +625,19 @@ export function AdminProducts() {
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
+                  disabled={isSaving}
                   onClick={() => setEditing(null)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-slate-600 hover:bg-slate-50 font-semibold"
+                  className="rounded-xl border border-slate-200 px-4 py-2 text-slate-600 hover:bg-slate-50 font-semibold disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="admin-primary-action rounded-xl bg-blue-600 px-5 py-2 text-white font-bold hover:bg-blue-700 shadow-sm"
+                  disabled={isSaving}
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-white font-bold hover:bg-blue-700 shadow-sm disabled:opacity-50"
                 >
-                  Save Product Changes
+                  {isSaving && <Loader2Icon className="h-4 w-4 animate-spin" />}
+                  {isSaving ? 'Saving...' : 'Save Product Changes'}
                 </button>
               </div>
             </form>

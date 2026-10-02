@@ -19,6 +19,7 @@ import {
 import { useStore } from '../../contexts/StoreContext';
 import { cn } from '../../utils/format';
 import { Logo } from '../ui/Logo';
+import { ErrorBoundary } from '../ui/ErrorBoundary';
 import { hasAdminSession } from '../../utils/adminAuth';
 
 export function AdminLayout() {
@@ -192,7 +193,9 @@ export function AdminLayout() {
 
         {/* Routed Sub-pages */}
         <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-          <Outlet />
+          <ErrorBoundary fallbackTitle="Admin Section Error">
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

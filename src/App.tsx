@@ -7,6 +7,7 @@ import { DataProvider } from './contexts/DataContext';
 import { StoreProvider } from './contexts/StoreContext';
 import { SiteLayout } from './components/layout/SiteLayout';
 import { LoadingScreen } from './components/layout/LoadingScreen';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { AccountLayout } from './components/account/AccountLayout';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { Home } from './pages/Home';
@@ -61,8 +62,9 @@ export function App({ showIntroLoader = true }: AppProps) {
         <ToastProvider>
           <DataProvider>
             <StoreProvider>
-              <AnimatePresence>{booting && <LoadingScreen />}</AnimatePresence>
-              <BrowserRouter>
+              <ErrorBoundary fallbackTitle="Samedi Store Error">
+                <AnimatePresence>{booting && <LoadingScreen />}</AnimatePresence>
+                <BrowserRouter>
                 <Routes>
                   {/* Admin Portal Routes */}
                   <Route path="/admin/login" element={<AdminLogin />} />
@@ -109,6 +111,7 @@ export function App({ showIntroLoader = true }: AppProps) {
                   </Route>
                 </Routes>
               </BrowserRouter>
+              </ErrorBoundary>
             </StoreProvider>
           </DataProvider>
         </ToastProvider>

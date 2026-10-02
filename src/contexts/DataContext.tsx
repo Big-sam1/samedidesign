@@ -42,15 +42,93 @@ const defaultSiteContent: SiteContent = {
   contactLocation: 'Nyamirambo Biryogo, Kigali, Rwanda'
 };
 
+/**
+ * Safe localStorage write that handles browser storage quota limits
+ * and avoids crashing the app when large base64 images are stored.
+ */
+function safeSetLocalStorage(key: string, value: any) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.warn(`[DataContext] localStorage quota exceeded for key "${key}". Saving lightweight copy:`, err);
+    try {
+      if (Array.isArray(value)) {
+        // Strip large data URLs (> 50KB) to ensure essential metadata and product list persists
+        const lightweight = value.map((item) => {
+          if (!item) return item;
+          if (Array.isArray(item.images)) {
+            return {
+              ...item,
+              images: item.images.map((img: string) =>
+                typeof img === 'string' && img.startsWith('data:image') && img.length > 50000
+                  ? '/samed-design-logo.png'
+                  : img
+              )
+            };
+          }
+          return item;
+        });
+        localStorage.setItem(key, JSON.stringify(lightweight));
+      }
+    } catch {
+      // If even lightweight copy cannot be written, safely ignore
+    }
+  }
+}
+
+/**
+ * Ensures a Product object always has valid arrays and numbers
+ * so that rendering never throws runtime undefined/null errors.
+ */
+export function sanitizeProduct(p: any): Product {
+  const fallbackImages = ['/samed-design-logo.png', '/samed-design-logo.png'];
+  const safeImages = Array.isArray(p?.images) && p.images.length > 0
+    ? p.images.map((img: any) => typeof img === 'string' && img ? img : '/samed-design-logo.png')
+    : fallbackImages;
+
+  const safeSizes = Array.isArray(p?.sizes) && p.sizes.length > 0
+    ? p.sizes.map((s: any) => String(s || '').trim()).filter(Boolean)
+    : ['M', 'L', 'XL', '2XL', '3XL', '4XL'];
+
+  const safeColors = Array.isArray(p?.colors) && p.colors.length > 0
+    ? p.colors
+    : [{ name: 'Default', hex: '#000000' }];
+
+  return {
+    id: String(p?.id || `product-${Date.now()}`),
+    name: String(p?.name || 'Unnamed Product'),
+    brand: String(p?.brand || 'Samedi'),
+    category: String(p?.category || 'pants'),
+    price: typeof p?.price === 'number' && !isNaN(p.price) ? p.price : Number(p?.price) || 10,
+    oldPrice: p?.oldPrice !== undefined && p?.oldPrice !== null && !isNaN(Number(p?.oldPrice)) ? Number(p?.oldPrice) : undefined,
+    rating: typeof p?.rating === 'number' && !isNaN(p.rating) ? p.rating : 5,
+    reviews: typeof p?.reviews === 'number' && !isNaN(p.reviews) ? p.reviews : 1,
+    images: safeImages,
+    description: String(p?.description || ''),
+    colors: safeColors,
+    sizes: safeSizes,
+    badge: p?.badge || undefined,
+    stock: typeof p?.stock === 'number' && !isNaN(p.stock) ? p.stock : Number(p?.stock) || 0,
+    isNew: Boolean(p?.isNew),
+    isBestSeller: Boolean(p?.isBestSeller)
+  };
+}
+
 const DataContext = createContext<DataContextValue | null>(null);
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      return saved ? JSON.parse(saved) : initialProducts;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(sanitizeProduct);
+        }
+      }
+      return initialProducts.map(sanitizeProduct);
     } catch {
-      return initialProducts;
+      return initialProducts.map(sanitizeProduct);
     }
   });
 
@@ -77,30 +155,33 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     async function loadRemote() {
-      // Local data remains usable when Supabase has not been configured for this deployment.
       if (!isSupabaseConfigured) {
         return;
       }
       try {
+        setLoading(true);
         const { data: remoteProducts, error: pErr } = await supabase.from('products').select('*');
         if (!pErr && remoteProducts && remoteProducts.length > 0 && isMounted) {
-          setProducts(remoteProducts as Product[]);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(remoteProducts));
+          const sanitized = remoteProducts.map(sanitizeProduct);
+          setProducts(sanitized);
+          safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, sanitized);
         }
 
         const { data: remoteBlog, error: bErr } = await supabase.from('blog_posts').select('*');
         if (!bErr && remoteBlog && remoteBlog.length > 0 && isMounted) {
           setBlogPosts(remoteBlog as BlogPost[]);
-          localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(remoteBlog));
+          safeSetLocalStorage(STORAGE_KEYS.BLOG, remoteBlog);
         }
 
         const { data: remoteContent, error: cErr } = await supabase.from('site_content').select('*').single();
         if (!cErr && remoteContent && isMounted) {
           setSiteContent((prev) => ({ ...prev, ...remoteContent }));
-          localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(remoteContent));
+          safeSetLocalStorage(STORAGE_KEYS.CONTENT, remoteContent);
         }
-      } catch {
-        // A temporary remote failure must not interrupt the locally cached storefront.
+      } catch (err) {
+        console.warn('Supabase remote sync bypassed:', err);
+      } finally {
+        if (isMounted) setLoading(false);
       }
     }
     loadRemote();
@@ -113,24 +194,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const syncLocalData = (event: StorageEvent) => {
       if (event.key === STORAGE_KEYS.PRODUCTS && event.newValue) {
         try {
-          setProducts(JSON.parse(event.newValue));
-        } catch {
-          // Ignore malformed external storage updates.
-        }
+          const parsed = JSON.parse(event.newValue);
+          if (Array.isArray(parsed)) {
+            setProducts(parsed.map(sanitizeProduct));
+          }
+        } catch {}
       }
       if (event.key === STORAGE_KEYS.BLOG && event.newValue) {
         try {
           setBlogPosts(JSON.parse(event.newValue));
-        } catch {
-          // Ignore malformed external storage updates.
-        }
+        } catch {}
       }
       if (event.key === STORAGE_KEYS.CONTENT && event.newValue) {
         try {
           setSiteContent((prev) => ({ ...prev, ...JSON.parse(event.newValue as string) }));
-        } catch {
-          // Ignore malformed external storage updates.
-        }
+        } catch {}
       }
     };
 
@@ -138,31 +216,39 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', syncLocalData);
   }, []);
 
+  // Listen to remote database changes in real time
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
     const channel = supabase
       .channel('samedidesign-data-sync')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, async () => {
-        const { data } = await supabase.from('products').select('*');
-        if (data && data.length > 0) {
-          setProducts(data as Product[]);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(data));
-        }
+        try {
+          const { data } = await supabase.from('products').select('*');
+          if (data && data.length > 0) {
+            const sanitized = data.map(sanitizeProduct);
+            setProducts(sanitized);
+            safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, sanitized);
+          }
+        } catch {}
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'blog_posts' }, async () => {
-        const { data } = await supabase.from('blog_posts').select('*');
-        if (data && data.length > 0) {
-          setBlogPosts(data as BlogPost[]);
-          localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(data));
-        }
+        try {
+          const { data } = await supabase.from('blog_posts').select('*');
+          if (data && data.length > 0) {
+            setBlogPosts(data as BlogPost[]);
+            safeSetLocalStorage(STORAGE_KEYS.BLOG, data);
+          }
+        } catch {}
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'site_content' }, async () => {
-        const { data } = await supabase.from('site_content').select('*').single();
-        if (data) {
-          setSiteContent((prev) => ({ ...prev, ...data }));
-          localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(data));
-        }
+        try {
+          const { data } = await supabase.from('site_content').select('*').single();
+          if (data) {
+            setSiteContent((prev) => ({ ...prev, ...data }));
+            safeSetLocalStorage(STORAGE_KEYS.CONTENT, data);
+          }
+        } catch {}
       })
       .subscribe();
 
@@ -171,7 +257,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Realtime Broadcast Channel to sync between admin and customer devices in real-time
+  // Lightweight broadcast to notify peer browsers in real time
   useEffect(() => {
     if (!isSupabaseConfigured) return;
 
@@ -180,22 +266,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     });
 
     syncChannel
-      .on('broadcast', { event: 'products_sync' }, (payload) => {
-        if (payload.payload && Array.isArray(payload.payload.products)) {
-          setProducts(payload.payload.products);
-          localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(payload.payload.products));
+      .on('broadcast', { event: 'products_sync' }, async (payload) => {
+        if (payload?.payload?.product) {
+          const item = sanitizeProduct(payload.payload.product);
+          setProducts((prev) => {
+            const next = prev.some((p) => p.id === item.id)
+              ? prev.map((p) => (p.id === item.id ? item : p))
+              : [item, ...prev];
+            safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, next);
+            return next;
+          });
+        } else if (payload?.payload?.deletedId) {
+          setProducts((prev) => {
+            const next = prev.filter((p) => p.id !== payload.payload.deletedId);
+            safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, next);
+            return next;
+          });
         }
       })
       .on('broadcast', { event: 'blog_sync' }, (payload) => {
-        if (payload.payload && Array.isArray(payload.payload.blogPosts)) {
+        if (payload?.payload?.blogPosts && Array.isArray(payload.payload.blogPosts)) {
           setBlogPosts(payload.payload.blogPosts);
-          localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(payload.payload.blogPosts));
+          safeSetLocalStorage(STORAGE_KEYS.BLOG, payload.payload.blogPosts);
         }
       })
       .on('broadcast', { event: 'content_sync' }, (payload) => {
-        if (payload.payload && payload.payload.siteContent) {
+        if (payload?.payload?.siteContent) {
           setSiteContent((prev) => ({ ...prev, ...payload.payload.siteContent }));
-          localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(payload.payload.siteContent));
+          safeSetLocalStorage(STORAGE_KEYS.CONTENT, payload.payload.siteContent);
         }
       })
       .subscribe();
@@ -205,19 +303,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const broadcastProducts = (next: Product[]) => {
+  const broadcastProductChange = (type: 'update' | 'delete', data: any) => {
     try {
+      if (!isSupabaseConfigured) return;
       const ch = supabase.channel('samedidesign-live-updates');
       ch.send({
         type: 'broadcast',
         event: 'products_sync',
-        payload: { products: next }
+        payload: type === 'delete' ? { deletedId: data } : { product: data }
       }).catch(() => {});
     } catch {}
   };
 
   const broadcastBlog = (next: BlogPost[]) => {
     try {
+      if (!isSupabaseConfigured) return;
       const ch = supabase.channel('samedidesign-live-updates');
       ch.send({
         type: 'broadcast',
@@ -229,6 +329,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const broadcastContent = (next: SiteContent) => {
     try {
+      if (!isSupabaseConfigured) return;
       const ch = supabase.channel('samedidesign-live-updates');
       ch.send({
         type: 'broadcast',
@@ -239,117 +340,151 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProduct = useCallback(async (updated: Product): Promise<boolean> => {
-    try {
-      setProducts((prev) => {
-        const next = prev.map((p) => (p.id === updated.id ? updated : p));
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
-        broadcastProducts(next);
-        return next;
-      });
-      const { error } = await supabase.from('products').upsert(updated);
-      if (error) throw error;
-    } catch {
-      return false;
+    const safeUpdated = sanitizeProduct(updated);
+    setProducts((prev) => {
+      const next = prev.map((p) => (p.id === safeUpdated.id ? safeUpdated : p));
+      safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, next);
+      return next;
+    });
+    broadcastProductChange('update', safeUpdated);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('products').upsert(safeUpdated);
+        if (error) {
+          console.warn('[DataContext] Supabase upsert error (saved locally):', error);
+        }
+      } catch (err) {
+        console.warn('[DataContext] Supabase upsert exception (saved locally):', err);
+      }
     }
+    return true;
   }, []);
 
   const addProduct = useCallback(async (product: Product): Promise<boolean> => {
-    try {
-      setProducts((prev) => {
-        const next = [product, ...prev];
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
-        broadcastProducts(next);
-        return next;
-      });
-      const { error } = await supabase.from('products').insert(product);
-      if (error) throw error;
-    } catch {
-      return false;
+    const safeProduct = sanitizeProduct(product);
+    setProducts((prev) => {
+      const next = [safeProduct, ...prev.filter((p) => p.id !== safeProduct.id)];
+      safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, next);
+      return next;
+    });
+    broadcastProductChange('update', safeProduct);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('products').insert(safeProduct);
+        if (error) {
+          console.warn('[DataContext] Supabase insert error (saved locally):', error);
+        }
+      } catch (err) {
+        console.warn('[DataContext] Supabase insert exception (saved locally):', err);
+      }
     }
+    return true;
   }, []);
 
   const deleteProduct = useCallback(async (id: string): Promise<boolean> => {
-    try {
-      setProducts((prev) => {
-        const next = prev.filter((p) => p.id !== id);
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(next));
-        broadcastProducts(next);
-        return next;
-      });
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
-    } catch {
-      return false;
+    setProducts((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, next);
+      return next;
+    });
+    broadcastProductChange('delete', id);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) {
+          console.warn('[DataContext] Supabase delete error (deleted locally):', error);
+        }
+      } catch (err) {
+        console.warn('[DataContext] Supabase delete exception (deleted locally):', err);
+      }
     }
+    return true;
   }, []);
 
   const updateBlogPost = useCallback(async (updated: BlogPost): Promise<boolean> => {
-    try {
-      setBlogPosts((prev) => {
-        const next = prev.map((b) => (b.slug === updated.slug ? updated : b));
-        localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
-        broadcastBlog(next);
-        return next;
-      });
-      const { error } = await supabase.from('blog_posts').upsert(updated);
-      if (error) throw error;
-    } catch {
-      return false;
+    setBlogPosts((prev) => {
+      const next = prev.map((b) => (b.slug === updated.slug ? updated : b));
+      safeSetLocalStorage(STORAGE_KEYS.BLOG, next);
+      return next;
+    });
+    broadcastBlog([updated]);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('blog_posts').upsert(updated);
+        if (error) console.warn('[DataContext] Supabase blog upsert error:', error);
+      } catch (err) {
+        console.warn('[DataContext] Supabase blog upsert exception:', err);
+      }
     }
+    return true;
   }, []);
 
   const addBlogPost = useCallback(async (post: BlogPost): Promise<boolean> => {
-    try {
-      setBlogPosts((prev) => {
-        const next = [post, ...prev];
-        localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
-        broadcastBlog(next);
-        return next;
-      });
-      const { error } = await supabase.from('blog_posts').insert(post);
-      if (error) throw error;
-    } catch {
-      return false;
+    setBlogPosts((prev) => {
+      const next = [post, ...prev.filter((b) => b.slug !== post.slug)];
+      safeSetLocalStorage(STORAGE_KEYS.BLOG, next);
+      return next;
+    });
+    broadcastBlog([post]);
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('blog_posts').insert(post);
+        if (error) console.warn('[DataContext] Supabase blog insert error:', error);
+      } catch (err) {
+        console.warn('[DataContext] Supabase blog insert exception:', err);
+      }
     }
+    return true;
   }, []);
 
   const deleteBlogPost = useCallback(async (slug: string): Promise<boolean> => {
-    try {
-      setBlogPosts((prev) => {
-        const next = prev.filter((b) => b.slug !== slug);
-        localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(next));
-        broadcastBlog(next);
-        return next;
-      });
-      const { error } = await supabase.from('blog_posts').delete().eq('slug', slug);
-      if (error) throw error;
-    } catch {
-      return false;
+    setBlogPosts((prev) => {
+      const next = prev.filter((b) => b.slug !== slug);
+      safeSetLocalStorage(STORAGE_KEYS.BLOG, next);
+      return next;
+    });
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('blog_posts').delete().eq('slug', slug);
+        if (error) console.warn('[DataContext] Supabase blog delete error:', error);
+      } catch (err) {
+        console.warn('[DataContext] Supabase blog delete exception:', err);
+      }
     }
+    return true;
   }, []);
 
   const updateSiteContent = useCallback(async (content: Partial<SiteContent>): Promise<boolean> => {
-    try {
-      setSiteContent((prev) => {
-        const next = { ...prev, ...content };
-        localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(next));
-        broadcastContent(next);
-        return next;
-      });
-      const { error } = await supabase.from('site_content').upsert({ id: 'site', ...content });
-      if (error) throw error;
-    } catch {
-      return false;
+    setSiteContent((prev) => {
+      const next = { ...prev, ...content };
+      safeSetLocalStorage(STORAGE_KEYS.CONTENT, next);
+      return next;
+    });
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('site_content').upsert({ id: 'site', ...content });
+        if (error) console.warn('[DataContext] Supabase site_content upsert error:', error);
+      } catch (err) {
+        console.warn('[DataContext] Supabase site_content upsert exception:', err);
+      }
     }
+    return true;
   }, []);
 
   const resetToDefaults = useCallback(() => {
-    setProducts(initialProducts);
+    setProducts(initialProducts.map(sanitizeProduct));
     setBlogPosts(initialBlogPosts);
     setSiteContent(defaultSiteContent);
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(initialProducts));
-    localStorage.setItem(STORAGE_KEYS.BLOG, JSON.stringify(initialBlogPosts));
-    localStorage.setItem(STORAGE_KEYS.CONTENT, JSON.stringify(defaultSiteContent));
+    safeSetLocalStorage(STORAGE_KEYS.PRODUCTS, initialProducts);
+    safeSetLocalStorage(STORAGE_KEYS.BLOG, initialBlogPosts);
+    safeSetLocalStorage(STORAGE_KEYS.CONTENT, defaultSiteContent);
   }, []);
 
   return (

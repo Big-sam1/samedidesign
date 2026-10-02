@@ -21,19 +21,22 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
     ? 'Manage products highlighted in the "New Arrivals" carousel and grid on the store homepage.'
     : 'Manage customer favorites and featured bestsellers shown across the site.';
 
-  const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = (products || []).filter((p) => {
+    if (!p) return false;
+    const name = String(p.name || '').toLowerCase();
+    const category = String(p.category || '').toLowerCase();
+    const q = search.trim().toLowerCase();
+    return !q || name.includes(q) || category.includes(q);
+  });
   const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const visibleProducts = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const visibleProducts = filtered.slice(Math.max(0, (page - 1) * pageSize), page * pageSize);
 
   useEffect(() => {
     setPage(1);
   }, [search]);
 
   useEffect(() => {
-    setPage((current) => Math.min(current, pageCount));
+    setPage((current) => Math.min(Math.max(1, current), pageCount));
   }, [pageCount]);
 
   const toggleFeatured = async (product: Product) => {
@@ -43,7 +46,7 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
 
     await updateProduct(updated);
     setStatusMsg(
-      `"${product.name}" is now ${
+      `"${product.name || 'Product'}" is now ${
         (isArrivalMode ? updated.isNew : updated.isBestSeller) ? 'ENABLED' : 'REMOVED'
       } for ${isArrivalMode ? 'New Arrivals' : 'Best Sellers'}.`
     );
@@ -51,10 +54,10 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
   };
 
   const updateHoverImage = async (product: Product, newHoverUrl: string) => {
-    const imgs = [...product.images];
+    const imgs = Array.isArray(product.images) && product.images.length > 0 ? [...product.images] : ['/samed-design-logo.png', '/samed-design-logo.png'];
     imgs[1] = newHoverUrl;
     await updateProduct({ ...product, images: imgs });
-    setStatusMsg(`Hover swapped image updated for "${product.name}".`);
+    setStatusMsg(`Hover swapped image updated for "${product.name || 'Product'}".`);
     setTimeout(() => setStatusMsg(null), 3000);
   };
 
@@ -119,14 +122,17 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <img
-                    src={item.images[0]}
-                    alt={item.name}
+                    src={(Array.isArray(item.images) && item.images[0]) || '/samed-design-logo.png'}
+                    alt={item.name || 'Product'}
                     className="h-14 w-14 rounded-xl object-cover border bg-slate-50 shrink-0"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                    }}
                   />
                   <div>
-                    <h4 className="text-sm font-bold text-slate-900 leading-snug">{item.name}</h4>
-                    <p className="text-xs text-slate-400 capitalize">{item.category}</p>
-                    <p className="text-xs font-extrabold text-slate-900 mt-0.5">{formatPrice(item.price)}</p>
+                    <h4 className="text-sm font-bold text-slate-900 leading-snug">{item.name || 'Product'}</h4>
+                    <p className="text-xs text-slate-400 capitalize">{item.category || 'General'}</p>
+                    <p className="text-xs font-extrabold text-slate-900 mt-0.5">{formatPrice(Number(item.price) || 0)}</p>
                   </div>
                 </div>
 
@@ -154,21 +160,24 @@ export function AdminFeaturedSection({ type }: AdminFeaturedProps) {
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    defaultValue={item.images[1] || ''}
+                    defaultValue={(Array.isArray(item.images) && item.images[1]) || ''}
                     onBlur={(e) => {
-                      if (e.target.value !== item.images[1]) {
+                      if (e.target.value !== ((Array.isArray(item.images) && item.images[1]) || '')) {
                         updateHoverImage(item, e.target.value);
                       }
                     }}
                     placeholder="URL or image path..."
                     className="flex-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-800"
                   />
-                  {item.images[1] && (
+                  {Array.isArray(item.images) && item.images[1] && (
                     <img
                       src={item.images[1]}
                       alt="Hover preview"
                       className="h-7 w-7 rounded-lg object-cover border border-slate-200 shrink-0"
                       title="Hover preview"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/samed-design-logo.png';
+                      }}
                     />
                   )}
                 </div>
